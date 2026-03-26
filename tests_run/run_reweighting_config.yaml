@@ -29,7 +29,6 @@ reweighting:
     - "Bins"
   sample: "bd_jpsikst_ee"                   # Label for the sample used
   transform: "yeo-johnson"                  # Data transformation method for XGB and NN
-  clip_weights: true                        # Whether to clip extreme weights for stability
   n_trials: 5                               # Number of optuna trials for hyperparameter tuning (set to 0 to disable) 
   n_folds: 5                                # Number of folds for k-folding
   test_size: 0.35                           # Test size for train/test split

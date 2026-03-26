@@ -30,7 +30,6 @@ reweighting:
     - "Bins"
   sample: "ci_throughput_sample"
   transform: null
-  clip_weights: false
   n_trials: 0
   n_folds: 2
   test_size: 0.3

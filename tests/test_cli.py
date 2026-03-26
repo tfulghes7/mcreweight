@@ -32,7 +32,6 @@ def _write_run_config(path: Path, weights_dir: Path, plot_dir: Path) -> Path:
             "methods": ["Bins"],
             "sample": "ci_test_sample",
             "transform": None,
-            "clip_weights": False,
             "n_trials": 0,
             "n_folds": 2,
             "test_size": 0.3,

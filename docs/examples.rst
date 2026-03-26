@@ -78,7 +78,6 @@ and these monitoring variables:
 The config also enables:
 
 - ``transform: yeo-johnson``
-- ``clip_weights: true``
 - ``n_trials: 5``
 - ``shap: true``
 

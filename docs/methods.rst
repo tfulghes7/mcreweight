@@ -53,7 +53,8 @@ All methods follow the same high-level workflow:
 1. split MC and data into training and testing subsets;
 2. fit the selected reweighter on the training subset;
 3. predict new MC weights;
-4. optionally clip very large predicted weights if ``clip_weights`` is enabled;
+4. clip only clearly extreme predicted weights, above roughly
+   :math:`\mu + 5\sigma`, for stability;
 5. save both the trained model and the produced weight arrays.
 
 The training entry points live in ``src/mcreweight/train.py`` and the ONNX-based
@@ -269,8 +270,7 @@ The one-dimensional histogram outputs are the most direct validation plots.
   plots. Large pull structures here indicate the differences that the
   reweighter is expected to learn.
 
-``input_features_training_transformed.png`` and
-``input_features_testing_transformed.png``
+``input_features_training_transformed.png`` and ``input_features_testing_transformed.png``
   These show the same variables after the optional preprocessing transform
   (for example ``yeo-johnson`` or ``quantile``). They are useful to verify what
   representation the ONNX-capable methods actually see during training.

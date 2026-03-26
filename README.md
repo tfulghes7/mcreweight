@@ -7,12 +7,10 @@ Bins reweighting works fine for one or two dimensional histograms, but it is uns
 
 ## Documentation
 
-Project documentation is intended to be available at:
+Project documentation is currently intended to be available at:
 
+- CERN Pages: `http://mcreweight.docs.cern.ch`
 - Read the Docs: `https://mcreweight.readthedocs.io/` once the project is imported and built there
-- GitHub Actions docs artifact: available from the `docs` job in the Actions workflow
-
-The GitHub mirror keeps the same Sphinx sources and Pixi-based documentation build used in the main repository.
 
 ## Setup
 
@@ -23,7 +21,7 @@ lb-conda mcreweight
 
 ## Installation
 
-If you don't run in a `lb-conda` environment, consider installing the python package from `PyPI` or cloning it from GitHub.
+If you don't run in a `lb-conda` environment, consider installing the python package from `PyPI` or cloning it from `GitLab`.
 
 ### From PyPI
 
@@ -31,13 +29,13 @@ If you don't run in a `lb-conda` environment, consider installing the python pac
 pip install mcreweight
 ```
 
-### From GitHub
+### From GitLab
 
 Requires [pixi](https://pixi.sh/latest/#installation).
 
 ```bash
-git clone https://github.com/<your-account>/mcreweight_github.git
-cd mcreweight_github
+git clone https://gitlab.cern.ch/lhcb-dpa/tools/mcreweight.git
+cd mcreweight
 ```
 
 To run the CLI tools you can prefix them with `pixi run`, i.e.
@@ -156,7 +154,6 @@ Reweighting:
 - `--sample`: Sample tag (default: `bd_jpsikst_ee`)
 - `--methods`: Methods list (defaults from YAML or internal defaults)
 - `--transform`: Feature transform (`quantile`, `yeo-johnson`, `signed-log`, `scaler`)
-- `--clip-weights`: Clip weights values to the 99th percentile for stability (default: `False`)
 - `--n_trials`: Optuna trials (default: `10`)
 - `--test_size`: Test split fraction (default: `0.3`)
 - `--n_folds`: Folding count (default: `10`)
@@ -239,8 +236,6 @@ pixi run -e docs build-docs
 ```
 
 The generated HTML documentation is written to `docs/_build/html/`.
-
-In the GitHub mirror, the same docs are also checked in GitHub Actions and can be hosted through Read the Docs.
 
 ## Contact
 

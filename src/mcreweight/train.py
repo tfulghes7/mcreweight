@@ -89,9 +89,21 @@ def _persist_onnx(model, prefix):
 
 
 def _clip_predicted_weights(args, weights):
-    if args.clip_weights:
-        return np.clip(weights, 0, np.percentile(weights, 99))
-    return weights
+    weights = np.asarray(weights, dtype=np.float64)
+    clipped = np.clip(weights, 0.0, np.inf)
+    finite = clipped[np.isfinite(clipped)]
+
+    if finite.size == 0:
+        return clipped
+
+    mean = float(np.mean(finite))
+    std = float(np.std(finite))
+
+    if not np.isfinite(std) or std <= 0.0:
+        return clipped
+
+    upper = mean + 5.0 * std
+    return np.clip(clipped, 0.0, upper)
 
 
 def _predict_test_weights(model, sample, columns, use_onnx_api):

@@ -102,8 +102,6 @@ def merge_args_with_config(args, cfg):
             "weighted_geometric",
         ),
         shap=args.shap or get_from_cfg(cfg, ["reweighting", "shap"], False),
-        clip_weights=args.clip_weights
-        or get_from_cfg(cfg, ["reweighting", "clip_weights"], False),
         # ---------------------
         # Output
         # ---------------------
@@ -194,11 +192,6 @@ def build_parser():
         "--transform",
         help="Transformation to apply to input features for reweighting (overrides YAML config).",
         choices=["quantile", "yeo-johnson", "signed-log", "scaler"],
-    )
-    parser.add_argument(
-        "--clip-weights",
-        action="store_true",
-        help="Whether to clip weights to the 99th percentile (overrides YAML config)",
     )
     parser.add_argument(
         "--n_trials",
