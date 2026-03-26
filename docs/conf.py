@@ -14,6 +14,7 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 
 autodoc_member_order = "bysource"
+python_maximum_signature_line_length = 68
 autodoc_mock_imports = [
     "awkward",
     "awkward_pandas",

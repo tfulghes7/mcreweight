@@ -15,6 +15,12 @@ from scipy.stats import binned_statistic_2d
 from .utils import fit_transform, apply_transform
 
 
+MC_COLOR = "#c62828"
+MC_DARK_COLOR = "#7f0000"
+DATA_COLOR = "#000000"
+NEUTRAL_COLOR = "#666666"
+
+
 def set_lhcb_style(grid=True, size=10, usetex=False):
     """
     Set matplotlib plotting style close to "official" LHCb style
@@ -153,18 +159,19 @@ def plot_distributions(
     if n_plots >= 10:
         n_cols = 5
     n_rows = math.ceil(n_plots / n_cols)
+    grid_rows = n_rows * 3
 
     fig, axes = plt.subplots(
-        n_rows * 2,
+        grid_rows,
         n_cols,
-        figsize=(8 * n_cols, 5 * n_rows),
-        gridspec_kw={"height_ratios": [2, 1] * n_rows},
-        constrained_layout=True,
+        figsize=(8.8 * n_cols, 6.6 * n_rows),
+        gridspec_kw={"height_ratios": [3.0, 1.0, 0.55] * n_rows},
+        constrained_layout=False,
     )
     axes = (
-        np.array(axes).reshape(n_rows * 2, n_cols)
+        np.array(axes).reshape(grid_rows, n_cols)
         if n_rows * n_cols > 1
-        else np.array([[axes[0]], [axes[1]]])
+        else np.array([[axes[0]], [axes[1]], [axes[2]]])
     )
 
     if transform is not None:
@@ -189,7 +196,7 @@ def plot_distributions(
             )
 
     for idx, col_name in enumerate(columns):
-        row = (idx // n_cols) * 2
+        row = (idx // n_cols) * 3
         col = idx % n_cols
 
         if transform is not None:
@@ -247,13 +254,20 @@ def plot_distributions(
 
         # --- Main plot ---
         ax_main = axes[row, col]
-        ax_main.step(bin_centers, mc_density, where="mid", label="MC", linewidth=1.5)
+        ax_main.step(
+            bin_centers,
+            mc_density,
+            where="mid",
+            label="MC",
+            linewidth=1.5,
+            color=MC_COLOR,
+        )
         ax_main.errorbar(
             bin_centers,
             mc_density,
             yerr=np.sqrt(mc_density_var),
             fmt="none",
-            ecolor="C0",
+            ecolor=MC_COLOR,
             elinewidth=1,
             capsize=2,
         )
@@ -262,6 +276,9 @@ def plot_distributions(
             data_density,
             yerr=np.sqrt(data_density_var),
             fmt="o",
+            color=DATA_COLOR,
+            markerfacecolor=DATA_COLOR,
+            markeredgecolor=DATA_COLOR,
             label="Data",
             capsize=3,
         )
@@ -272,16 +289,29 @@ def plot_distributions(
 
         # --- Pull plot ---
         ax_pull = axes[row + 1, col]
-        ax_pull.axhline(0, color="gray", linestyle="--")
-        ax_pull.bar(bin_centers, pulls, width=bin_widths, color="tab:red", alpha=0.6)
+        ax_pull.axhline(0, color=NEUTRAL_COLOR, linestyle="--")
+        ax_pull.bar(bin_centers, pulls, width=bin_widths, color=MC_COLOR, alpha=0.6)
         ax_pull.set_ylabel("Pull")
         ax_pull.set_xlabel(x_labels.get(col_name, col_name))
         ax_pull.set_ylim(-pull_clip, pull_clip)
         ax_pull.grid(True, alpha=0.3)
 
+        # Spacer row between grouped panels
+        axes[row + 2, col].axis("off")
+
     # Hide unused axes
-    for i in range(len(columns) * 2, axes.size):
+    used_axes = len(columns) * 3
+    for i in range(used_axes, axes.size):
         axes.flat[i].axis("off")
+
+    fig.subplots_adjust(
+        left=0.10,
+        right=0.96,
+        top=0.93,
+        bottom=0.14,
+        wspace=0.34,
+        hspace=0.08,
+    )
 
     plt.savefig(output_file, bbox_inches="tight", dpi=300)
     plt.close(fig)
@@ -343,7 +373,12 @@ def plot_mc_distributions(
             k: v for k, v in hist_settings.items() if k not in ["bins", "histtype"]
         }
         ax_main.step(
-            bin_centers, hist_orig, where="mid", label="Original MC", **step_settings
+            bin_centers,
+            hist_orig,
+            where="mid",
+            label="Original MC",
+            color=MC_COLOR,
+            **step_settings,
         )
         ax_main.step(
             bin_centers,
@@ -351,6 +386,7 @@ def plot_mc_distributions(
             where="mid",
             label="Reweighted MC",
             linestyle="--",
+            color=MC_DARK_COLOR,
             **step_settings,
         )
         ax_main.set_ylabel("A.U.")
@@ -487,6 +523,8 @@ def plot_classifier_output(
     ``min_score`` and ``max_score``.
     """
 
+    set_lhcb_style()
+
     plt.figure(figsize=(16, 12))
 
     example_method = next(iter(scores))
@@ -512,6 +550,7 @@ def plot_classifier_output(
             alpha=0.6,
             range=(min_score, max_score),
             label=legend_label,
+            color=MC_COLOR,
         )
 
     # Also show Data distribution
@@ -523,6 +562,7 @@ def plot_classifier_output(
         alpha=0.6,
         range=(min_score, max_score),
         label="Data",
+        color=DATA_COLOR,
     )
 
     plt.xlabel("Classifier output")

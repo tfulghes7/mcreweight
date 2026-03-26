@@ -165,9 +165,9 @@ def gbreweight(args, sample, columns, study, weightsdir):
     tag = _tag(columns)
 
     gbr = GBReweighter(
-        n_estimators=best.get("n_estimators", 100),
-        learning_rate=best.get("learning_rate", 0.1),
-        max_depth=best.get("max_depth", 4),
+        n_estimators=best.get("gb_n_estimators", best.get("n_estimators", 100)),
+        learning_rate=best.get("gb_learning_rate", best.get("learning_rate", 0.1)),
+        max_depth=best.get("gb_max_depth", best.get("max_depth", 4)),
     )
 
     print(f"Training GBReweighter with columns: {columns}")

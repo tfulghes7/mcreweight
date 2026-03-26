@@ -85,7 +85,7 @@ TRAINING_GROUPS = (
     {
         "base_method": "ONNXGB",
         "folding_method": "ONNXFolding",
-        "classifier_type": "GB",
+        "classifier_type": "ONNXGB",
         "base_train_fn": onnxgbreweight,
         "fold_train_fn": onnxfolding,
         "base_result_key": "ONNXGB",

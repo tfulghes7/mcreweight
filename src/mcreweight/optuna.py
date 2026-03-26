@@ -2,7 +2,11 @@ import os
 import numpy as np
 import joblib
 import optuna
-from mcreweight.models.onnxreweighter import ONNXIXGBReweighter, ONNXINNReweighter
+from mcreweight.models.onnxreweighter import (
+    ONNXGBReweighter,
+    ONNXINNReweighter,
+    ONNXIXGBReweighter,
+)
 from mcreweight.utils.utils import evaluate_reweighting
 from mcreweight.io import flatten_vars
 from hep_ml.reweight import GBReweighter
@@ -12,7 +16,8 @@ def optuna_tuning(
     args, mc, data, mcweights, sweights, columns, n_trials, weightsdir, classifier_type
 ):
     """
-    Run Optuna to optimize hyperparameters for GBReweighter and iterative reweighters (XGB or NN), with caching to avoid redundant runs.
+    Run Optuna to optimize hyperparameters for GBReweighter and ONNX-capable
+    reweighters, with caching to avoid redundant runs.
 
     Args:
         args: Command-line arguments containing configuration options.
@@ -23,7 +28,8 @@ def optuna_tuning(
         columns (list): List of column names to use for training.
         n_trials (int): Number of trials for hyperparameter optimization.
         weightsdir (str): Directory to save the weights and model.
-        classifier_type (str): Type of classifier ("GB", "XGB" or "NN").
+        classifier_type (str): Type of classifier ("GB", "ONNXGB", "XGB" or
+            "NN").
     Returns:
         study: Optuna study object containing the results of the optimization.
     """
@@ -58,7 +64,8 @@ def run_optuna(
     args, mc, data, mcweights, sweights, columns, n_trials, weightsdir, classifier_type
 ):
     """
-    Hyperparameter tuning for GBReweighter and iterative ONNX reweighters:
+    Hyperparameter tuning for GBReweighter and ONNX reweighters:
+      - ONNXGBReweighter (hep_ml-like tree ensemble)
       - ONNXIXGBReweighter (XGB base estimator)
       - ONNXINNReweighter (NN base estimator)
     and for stage-wise update (n_iterations, mixing_learning_rate).
@@ -66,7 +73,8 @@ def run_optuna(
     Optimizes BOTH:
       (A) iterative reweighting hyperparams (stage-wise updates)
       (B) base classifier hyperparams (XGB or MLP)
-    Or just (B) if you want to optimize GBReweighter.
+    Or just the direct estimator hyperparameters if you want to optimize
+    GBReweighter or ONNXGBReweighter.
 
     The objective is the AUC of a classifier trained to distinguish reweighted MC from Data.
 
@@ -79,7 +87,8 @@ def run_optuna(
         columns (list): List of feature columns to use for training the reweighter and evaluating the AUC.
         n_trials (int): Number of Optuna trials for hyperparameter optimization.
         weightsdir (str): Directory to save the trained reweighter weights.
-        classifier_type (str): Type of base classifier to use ("GB", "XGB" or "NN").
+        classifier_type (str): Type of base classifier to use ("GB", "ONNXGB",
+            "XGB" or "NN").
 
     Returns:
         optuna.Study: The Optuna study object containing the results of the hyperparameter optimization
@@ -90,7 +99,7 @@ def run_optuna(
     tag = "_".join(saving_vars)
 
     classifier_type = classifier_type.upper().strip()
-    if classifier_type not in ("GB", "XGB", "NN"):
+    if classifier_type not in ("GB", "ONNXGB", "XGB", "NN"):
         raise ValueError(f"Unsupported classifier type: {classifier_type}")
 
     def suggest_iterative_params(trial):
@@ -112,6 +121,24 @@ def run_optuna(
             n_estimators=trial.suggest_int("gb_n_estimators", 50, 150, step=10),
             learning_rate=trial.suggest_float("gb_learning_rate", 0.05, 0.3, log=True),
             max_depth=trial.suggest_int("gb_max_depth", 3, 8, step=1),
+        )
+
+    def suggest_onnxgb_params(trial):
+        """
+        Hyperparameters for the native ONNXGB reweighter.
+
+        This starts from the same boosting controls as the hep_ml-compatible GB
+        study and adds the extra ONNXGB tree/update knobs exposed by the class.
+        """
+        return dict(
+            n_estimators=trial.suggest_int("gb_n_estimators", 50, 150, step=10),
+            learning_rate=trial.suggest_float("gb_learning_rate", 0.05, 0.3, log=True),
+            max_depth=trial.suggest_int("gb_max_depth", 3, 8, step=1),
+            min_samples_leaf=trial.suggest_int("min_samples_leaf", 50, 500, step=50),
+            loss_regularization=trial.suggest_float(
+                "loss_regularization", 1.0, 20.0, log=True
+            ),
+            subsample=trial.suggest_float("subsample", 0.5, 1.0, step=0.1),
         )
 
     def suggest_xgb_params(trial):
@@ -166,6 +193,33 @@ def run_optuna(
                 )
                 weights_pred = classifier.predict_weights(
                     mc[columns].to_numpy(), original_weight=mcweights
+                )
+
+            elif classifier_type == "ONNXGB":
+                onnxgb_params = suggest_onnxgb_params(trial)
+                classifier = ONNXGBReweighter(
+                    verbosity=args.verbosity,
+                    transform=args.transform,
+                    n_estimators=onnxgb_params["n_estimators"],
+                    learning_rate=onnxgb_params["learning_rate"],
+                    max_depth=onnxgb_params["max_depth"],
+                    min_samples_leaf=onnxgb_params["min_samples_leaf"],
+                    loss_regularization=onnxgb_params["loss_regularization"],
+                    subsample=onnxgb_params["subsample"],
+                )
+                classifier.fit(
+                    mc[columns].to_numpy(),
+                    data[columns].to_numpy(),
+                    ow=mcweights,
+                    tw=sweights,
+                )
+
+                prefix = f"{weightsdir}/optuna_kfold_{classifier_type}_{tag}"
+                classifier.save(prefix)
+                classifier.load(prefix)
+
+                weights_pred = classifier.predict_weights(
+                    mc[columns].to_numpy(), ow=mcweights
                 )
 
             else:
@@ -244,9 +298,18 @@ def run_optuna(
     # ----- Seeds: different for GB, XGB and NN -----
     if classifier_type == "GB":
         initial_params = dict(
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=5,
+            gb_n_estimators=100,
+            gb_learning_rate=0.1,
+            gb_max_depth=5,
+        )
+    elif classifier_type == "ONNXGB":
+        initial_params = dict(
+            gb_n_estimators=100,
+            gb_learning_rate=0.1,
+            gb_max_depth=4,
+            min_samples_leaf=200,
+            loss_regularization=5.0,
+            subsample=1.0,
         )
     elif classifier_type == "XGB":
         initial_params = dict(

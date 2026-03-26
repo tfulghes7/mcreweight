@@ -9,38 +9,44 @@ main differences with the reference algorithms documented in
 Overview
 --------
 
-``mcreweight`` exposes nine user-facing training modes:
+``mcreweight`` exposes nine user-facing training modes. They fall into four
+main families:
 
-``GB``
-  Direct use of ``hep_ml.reweight.GBReweighter``.
+``hep_ml``-native methods
+  - ``GB``: direct use of ``hep_ml.reweight.GBReweighter``.
+  - ``Folding``: direct use of ``hep_ml.reweight.FoldingReweighter`` around
+    ``GB``.
 
-``Folding``
-  Direct use of ``hep_ml.reweight.FoldingReweighter`` around ``GB``.
+ONNX-exportable gradient-boosting methods
+  - ``ONNXGB``: custom tree-based reweighter that reproduces the signed-weight
+    logic of ``hep_ml`` while remaining exportable to ONNX.
+  - ``ONNXFolding``: K-fold ensemble of ``ONNXGB`` models.
 
-``ONNXGB``
-  A custom gradient-boosted tree reweighter that reproduces the signed-weight
-  logic of ``hep_ml`` while remaining exportable to ONNX.
+Iterative classifier-ratio methods
+  - ``XGB``: iterative reweighter that trains an
+    ``xgboost.XGBClassifier`` at each stage and converts classifier
+    probabilities into multiplicative weight updates.
+  - ``XGBFolding``: K-fold ensemble of ``XGB`` models.
+  - ``NN``: iterative reweighter that uses a
+    ``sklearn.neural_network.MLPClassifier`` at each stage.
+  - ``NNFolding``: K-fold ensemble of ``NN`` models.
 
-``ONNXFolding``
-  K-fold ensemble of ``ONNXGB`` models.
+Histogram method
+  - ``Bins``: N-dimensional histogram ratio reweighter with neighbor
+    smoothing.
 
-``XGB``
-  Iterative reweighter that trains an ``xgboost.XGBClassifier`` at each
-  stage and converts classifier probabilities into multiplicative weight
-  updates.
+Another useful way to compare the methods is by implementation strategy:
 
-``XGBFolding``
-  K-fold ensemble of ``XGB`` models.
-
-``NN``
-  Iterative reweighter that uses a
-  ``sklearn.neural_network.MLPClassifier`` at each stage.
-
-``NNFolding``
-  K-fold ensemble of ``NN`` models.
-
-``Bins``
-  N-dimensional histogram ratio reweighter with neighbor smoothing.
+- choose ``GB`` or ``Folding`` if you want the closest behavior to the original
+  ``hep_ml`` package;
+- choose ``ONNXGB`` or ``ONNXFolding`` if you want hep_ml-like boosting logic
+  together with ONNX export;
+- choose ``XGB`` or ``NN`` if you want iterative density-ratio correction based
+  on a sequence of classifiers;
+- choose ``XGBFolding``, ``NNFolding``, or ``ONNXFolding`` if you want the same
+  base logic but with K-fold training to reduce application bias;
+- choose ``Bins`` if you want a transparent non-parametric baseline based on
+  binned ratios rather than learned trees or neural networks.
 
 All methods follow the same high-level workflow:
 
@@ -238,6 +244,160 @@ The available aggregation modes for ONNX folding are:
 - ``geometric``;
 - ``median``.
 
+Data visualization and diagnostics
+----------------------------------
+
+The training and application pipelines produce a set of standard plots under
+``plots/``. These figures are meant to answer slightly different questions:
+
+- are MC and data already mismatched before training;
+- does reweighting improve the agreement on the variables used for training;
+- does the improvement transfer to variables that were not used for training;
+- are the learned weights numerically well behaved;
+- can an independent classifier still distinguish reweighted MC from data;
+- where in phase space the remaining mismodelling is concentrated;
+- which input variables drive the learned correction.
+
+Input and monitoring distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The one-dimensional histogram outputs are the most direct validation plots.
+
+``input_features_training.png`` and ``input_features_testing.png``
+  These show the distributions of the training variables before reweighting,
+  separately for the train and test splits. They are the baseline mismatch
+  plots. Large pull structures here indicate the differences that the
+  reweighter is expected to learn.
+
+``input_features_training_transformed.png`` and
+``input_features_testing_transformed.png``
+  These show the same variables after the optional preprocessing transform
+  (for example ``yeo-johnson`` or ``quantile``). They are useful to verify what
+  representation the ONNX-capable methods actually see during training.
+
+``other_vars_training.png`` and ``other_vars_testing.png``
+  These correspond to the monitoring variables, called ``other_vars`` in the
+  output filenames. They are not used to train the reweighter. Instead they are
+  held out as a transfer test: if reweighting improves these variables too, the
+  correction is more likely to reflect genuine phase-space mismodelling rather
+  than simple overfitting of the training inputs.
+
+``input_features_<method>_weighted.png``
+  These show the training variables after applying the weights predicted by a
+  given method. This is the main post-training check. A good result is one in
+  which the reweighted MC moves closer to the data histogram and the pull panel
+  becomes more centered around zero.
+
+``other_vars_<method>_weighted.png``
+  These show the same post-training comparison for the monitoring variables.
+  Improvements here are especially informative because these variables were not
+  part of the direct optimization target.
+
+When applying an already trained model, the corresponding output names are
+``input_features_reweighted.png`` and ``other_vars_reweighted.png``. They play
+the same role, but now for the separately processed output sample.
+
+Correlation matrices
+~~~~~~~~~~~~~~~~~~~~
+
+``corr_mc.png`` and ``corr_data.png`` display the pairwise correlation matrices
+of the training variables before reweighting.
+
+These plots are useful because one-dimensional agreement is not enough: two
+samples can match marginal distributions and still differ strongly in their
+joint structure. The correlation matrices give a compact first view of whether
+important linear relationships differ between MC and data before training.
+
+Weight distributions
+~~~~~~~~~~~~~~~~~~~~
+
+``weight_distributions.png`` shows the distribution of the predicted event
+weights for each trained method.
+
+This plot is primarily a stability diagnostic:
+
+- a narrow distribution centered near one usually indicates a mild correction;
+- a broad tail can be acceptable, but may signal that the method must strongly
+  upweight a small region of phase space;
+- extremely long tails or spikes at very large weights are warning signs for
+  statistical instability and for downstream analyses that reuse the weights.
+
+Classifier-based diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Several plots are built from a fresh classifier trained after reweighting to
+separate reweighted MC from data. These are not the reweighters themselves.
+They are a common external probe of how distinguishable the two samples remain.
+
+``roc_curve.png``
+  This shows the ROC curve of that diagnostic classifier for each method. If
+  reweighting is effective, the classifier should struggle to separate the two
+  samples, and the curve should move closer to the diagonal. Equivalently, the
+  AUC should move closer to 0.5.
+
+``classifier_output.png``
+  This shows the classifier-score distributions for reweighted MC and for data.
+  It is often easier to interpret than the ROC curve because it directly shows
+  whether the diagnostic classifier assigns similar scores to both samples. The
+  plot also reports a weighted KS statistic, which summarizes the mismatch
+  between the two score distributions.
+
+The term "output distribution" in this context therefore refers to the
+distribution of the diagnostic classifier output score, not to the final
+physics variables themselves.
+
+2D score and pull maps
+~~~~~~~~~~~~~~~~~~~~~~
+
+``score_map_<method>.png``
+  This plot shows the mean diagnostic-classifier score in two-dimensional bins
+  of all pairs of training variables. It answers the question: in which regions
+  of phase space does the diagnostic classifier still find the reweighted MC
+  more MC-like or more data-like? Structured hot spots indicate localized
+  residual mismodelling even when one-dimensional projections look acceptable.
+
+``pull_map_<method>.png``
+  This plot shows the two-dimensional pull,
+
+  .. math::
+
+     \frac{\rho_{\mathrm{data}} - \rho_{\mathrm{MC}}}
+          {\sqrt{\sigma^2_{\mathrm{data}} + \sigma^2_{\mathrm{MC}}}},
+
+  in bins of every pair of training variables. A value near zero means local
+  agreement within uncertainty, while large positive or negative values point
+  to regions where the reweighted MC is still under- or over-populated with
+  respect to data.
+
+The difference between the two diagnostics is:
+
+- the score map is classifier-based and tells you where residual separation is
+  still easy for a learned discriminator;
+- the pull map is histogram-based and tells you where the weighted local event
+  densities still disagree.
+
+SHAP feature-importance plots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``feature_importance_<method>.png`` shows SHAP summary values for non-folding
+methods when ``shap: true`` is enabled.
+
+SHAP stands for SHapley Additive exPlanations. In this context it measures how
+much each input variable contributes to the model's predicted log weight for an
+event, relative to a reference expectation.
+
+The SHAP beeswarm plot should be read as follows:
+
+- each point is one event;
+- the horizontal position is the SHAP value, meaning the signed contribution of
+  that feature to increasing or decreasing the predicted log weight;
+- the color encodes whether the feature value itself is low or high;
+- features higher in the plot have larger overall impact on the model output.
+
+These plots do not by themselves tell you whether a model is "good" or "bad".
+They tell you which variables the reweighter is using most strongly to build
+its correction and in which direction they influence the learned weights.
+
 Loss function and update mechanics
 ----------------------------------
 
@@ -317,6 +477,133 @@ improving for ``reweight_early_stopping_rounds`` checks.
 This gives the iterative methods a direct physics-motivated stopping criterion:
 the model is not just trying to improve classifier loss, it is trying to reduce
 observable mismatches between reweighted MC and target data.
+
+Optuna hyperparameter optimization
+----------------------------------
+
+When ``n_trials`` is greater than zero, ``mcreweight`` runs an Optuna study
+before the final training step. The tuning logic is implemented in
+``src/mcreweight/optuna.py`` and supports four classifier families:
+
+- ``GB``
+- ``ONNXGB``
+- ``XGB``
+- ``NN``
+
+The study objective is the output of
+``mcreweight.utils.utils.evaluate_reweighting`` applied after reweighting. In
+practice, for each trial the package:
+
+1. samples a set of hyperparameters;
+2. trains the candidate reweighter on the full MC and data samples;
+3. predicts reweighted MC event weights;
+4. evaluates how well a fresh classifier can still separate reweighted MC from
+   data;
+5. minimizes the resulting score.
+
+Because ``evaluate_reweighting`` returns the AUC of a classifier trained to
+distinguish reweighted MC from data, smaller values are better. A perfectly
+matched reweighted sample should be harder to distinguish from data than a
+poorly reweighted one.
+
+The sampler is Optuna's TPE sampler with ``seed=42``, and the study direction
+is ``minimize``.
+
+Cached studies
+~~~~~~~~~~~~~~
+
+Optuna studies are cached under ``weightsdir`` as:
+
+.. code-block:: text
+
+   optuna_study_<classifier_type>_<flattened_training_vars>.pkl
+
+If that file already exists, the study is loaded instead of recomputed.
+
+Seed trials
+~~~~~~~~~~~
+
+Before optimization starts, one manually chosen initial trial is enqueued:
+
+``GB``
+  ``gb_n_estimators=100``, ``gb_learning_rate=0.1``, ``gb_max_depth=5``
+
+``ONNXGB``
+  ``gb_n_estimators=100``, ``gb_learning_rate=0.1``, ``gb_max_depth=4``,
+  ``min_samples_leaf=200``, ``loss_regularization=5.0``, ``subsample=1.0``
+
+``XGB``
+  ``n_iterations=5``, ``mixing_learning_rate=0.1``,
+  ``xgb_learning_rate=0.1``, ``max_depth=6``, ``subsample=0.9``,
+  ``reg_alpha=1.0``, ``reg_lambda=5.0``
+
+``NN``
+  ``n_iterations=5``, ``mixing_learning_rate=0.1``, ``hidden1=64``,
+  ``hidden2=32``, ``alpha=1e-4``, ``nn_learning_rate_init=1e-3``,
+  ``batch_size=1024``
+
+Search spaces
+~~~~~~~~~~~~~
+
+The current Optuna intervals are:
+
+Shared iterative parameters for ``XGB`` and ``NN``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``n_iterations``: integer in ``[5, 25]``
+- ``mixing_learning_rate``: log-uniform float in ``[0.05, 0.3]``
+
+``GB`` search space
+^^^^^^^^^^^^^^^^^^^
+
+- ``gb_n_estimators``: integer in ``[50, 150]`` with step ``10``
+- ``gb_learning_rate``: log-uniform float in ``[0.05, 0.3]``
+- ``gb_max_depth``: integer in ``[3, 8]`` with step ``1``
+
+``ONNXGB`` search space
+^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``gb_n_estimators``: integer in ``[50, 150]`` with step ``10``
+- ``gb_learning_rate``: log-uniform float in ``[0.05, 0.3]``
+- ``gb_max_depth``: integer in ``[3, 8]`` with step ``1``
+- ``min_samples_leaf``: integer in ``[50, 500]`` with step ``50``
+- ``loss_regularization``: log-uniform float in ``[1.0, 20.0]``
+- ``subsample``: float in ``[0.5, 1.0]`` with step ``0.1``
+
+``XGB`` base-estimator search space
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``xgb_learning_rate``: log-uniform float in ``[0.05, 0.3]``
+- ``max_depth``: integer in ``[4, 8]`` with step ``1``
+- ``subsample``: float in ``[0.6, 1.0]`` with step ``0.1``
+- ``reg_alpha``: float in ``[0.0, 5.0]`` with step ``0.5``
+- ``reg_lambda``: float in ``[1.0, 10.0]`` with step ``1``
+
+``NN`` base-estimator search space
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``hidden1``: integer in ``[32, 128]`` with step ``16``
+- ``hidden2``: integer in ``[16, 64]`` with step ``16``
+- ``alpha``: log-uniform float in ``[1e-6, 1e-2]``
+- ``nn_learning_rate_init``: log-uniform float in ``[1e-4, 5e-3]``
+- ``batch_size``: categorical choice among ``256``, ``512``, ``1024``
+- ``max_iter``: integer in ``[50, 180]`` with step ``10``
+
+How tuned parameters are reused
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After the study finishes, the final training functions read ``study.best_params``
+and map them onto the concrete training backends:
+
+- ``GB`` uses the tuned boosting parameters directly in
+  ``hep_ml.reweight.GBReweighter``;
+- ``ONNXGB`` runs its own native Optuna objective with
+  ``ONNXGBReweighter`` and reuses the tuned tree/update parameters directly in
+  the final ONNX-exportable training pass;
+- ``XGB`` combines tuned iterative parameters with tuned XGBoost base-estimator
+  parameters in ``ONNXIXGBReweighter``;
+- ``NN`` combines tuned iterative parameters with tuned MLP base-estimator
+  parameters in ``ONNXINNReweighter``.
 
 Feature transformations
 -----------------------
