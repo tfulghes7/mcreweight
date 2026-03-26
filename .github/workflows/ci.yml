@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - onnx-dev
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+
+      - name: Run lint and tests
+        run: |
+          pixi run -e lint quality
+          pixi run -e test test
+
+  cli:
+    runs-on: ubuntu-latest
+    needs: verify
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+
+      - name: Run CLI tests
+        run: |
+          pixi run -e test pytest tests/test_cli.py::test_run_reweight -v
+          pixi run -e test pytest tests/test_cli.py::test_apply_weights -v
+
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: cli
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+
+      - name: Run throughput benchmark
+        run: |
+          pixi run -e test run-reweight --config tests_run/throughput_config.yaml
+          cat plots/ci_throughput_sample/training_throughput.json
+
+      - name: Upload throughput artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: throughput-artifacts
+          path: |
+            plots/ci_throughput_sample/training_throughput.json
+            plots/ci_throughput_sample/training_throughput.png
+
+  docs:
+    runs-on: ubuntu-latest
+    needs: verify
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+
+      - name: Build documentation
+        run: pixi run -e docs sphinx-build -b html -n -W --keep-going docs docs/_build/html
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: docs/_build/html

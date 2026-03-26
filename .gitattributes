@@ -1,0 +1,1 @@
+tests_run/*.root filter=lfs diff=lfs merge=lfs -text

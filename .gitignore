@@ -1,0 +1,29 @@
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Python
+__pycache__/
+*.pyc
+
+# Pixi
+.pixi/
+
+# Output files
+*.png
+*.pkl
+*.onnx
+*.root
+!tests_run/*.root
+
+# Documentation build output
+docs/_build/
+
+# Ignore plots and weights directories
+plots/
+weights/
+dist/
+
+##Ignore pycache directories
+__pycache__/
