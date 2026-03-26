@@ -1,0 +1,85 @@
+[project]
+name = "mcreweight"
+description = "Monte Carlo reweighting toolkit with multiple backends (hep_ml, XGBoost, neural networks, folding, and binning)."
+authors = [{ name = "Tommaso Fulghesu", email = "tommaso.fulghesu@cern.ch" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dynamic = ["version"]
+dependencies = [
+    "numpy>=1.20.0",
+    "pandas>=1.3.0",
+    "matplotlib>=3.4.0",
+    "scikit-learn>=1.2.0",
+    "optuna>=2.10.0",
+    "seaborn>=0.12.0",
+    "awkward-pandas>=2023.8.0",
+    "numexpr>=2.7.0",
+    "uproot>=5.0.0,!=5.6.8",
+    "awkward>=2.6.0",
+    "onnx>=1.15.0",
+    "onnxruntime>=1.16.0",
+    "skl2onnx>=1.15.0",
+    "joblib>=1.3.0",
+    "shap>=0.44.0",
+    "onnxmltools>=1.12.0",
+    "xgboost>=1.7.0",
+    "hep_ml>=0.8.0"
+]
+license = { file = "LICENSE" }
+
+[project.scripts]
+run-reweight = "mcreweight.scripts.run_reweighting:main"
+apply-weights = "mcreweight.scripts.apply_weights:main"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcreweight"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/mcreweight/utils/default_xlabels.yaml" = "mcreweight/utils/default_xlabels.yaml"
+
+[dependency-groups]
+test = ["pytest"]
+docs = ["sphinx>=7.2,<9"]
+lint = ["black>=24.0,<26", "ruff>=0.11,<1"]
+
+[tool.pytest.ini_options]
+markers = [
+    "cli: end-to-end CLI tests",
+]
+
+# --- Pixi configuration ---
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+
+[tool.pixi.dependencies]
+python = "3.9.*"
+git = "*"
+
+[tool.pixi.pypi-dependencies]
+mcreweight = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+lint = { features = ["lint"], solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+
+[tool.pixi.feature.lint.tasks]
+format-check = "black --check ."
+lint = "ruff check ."
+quality = { depends-on = ["format-check", "lint"] }
+
+[tool.pixi.feature.test.tasks]
+test = "pytest tests/ -v -m 'not cli'"
+
+[tool.pixi.feature.docs.tasks]
+build-docs = "sphinx-build -b html docs docs/_build/html"

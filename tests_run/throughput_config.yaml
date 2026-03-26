@@ -1,0 +1,47 @@
+input:
+  mc:
+    path: ["tests_run/test_mc.root"]
+    tree: "DecayTree"
+
+  data:
+    path: ["tests_run/test_data.root"]
+    tree: "DecayTree"
+    sweights_name: "sweight_sig"
+
+  path_xlabels: "src/mcreweight/utils/default_xlabels.yaml"
+
+variables:
+  training_vars:
+    - "B_DTF_Jpsi_P"
+    - "B_DTF_Jpsi_PT"
+    - "nPVs"
+    - "nLongTracks"
+
+reweighting:
+  methods:
+    - "GB"
+    - "Folding"
+    - "ONNXGB"
+    - "ONNXFolding"
+    - "XGB"
+    - "XGBFolding"
+    - "NN"
+    - "NNFolding"
+    - "Bins"
+  sample: "ci_throughput_sample"
+  transform: null
+  clip_weights: false
+  n_trials: 0
+  n_folds: 2
+  test_size: 0.3
+  n_bins: 8
+  n_neighs: 2
+  reweight_validation_fraction: 0.2
+  reweight_early_stopping_rounds: 2
+  reweight_metric_every: 1
+  folding_aggregation: "weighted_geometric"
+  shap: false
+
+output:
+  weightsdir: "weights"
+  plotdir: "plots"

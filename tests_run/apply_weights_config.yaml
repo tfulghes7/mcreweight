@@ -1,0 +1,39 @@
+input:
+  mc:
+    path: ["tests_run/test_mc.root"]     # Path to MC ROOT file
+    tree: "DecayTree"                                                                                                                             # Name of the MC TTree
+
+  data:
+    path: ["tests_run/test_data.root"]   # Path to Data ROOT file (optional, just for comparison)
+    tree: "DecayTree"                                                                                                                              # Name of the Data TTree
+    sweights_name: "sweight_sig"                                                                                                                   # Signal weights branch for Data
+
+  path_xlabels: "src/mcreweight/utils/default_xlabels.yaml"  # Optional labels for plotting
+
+variables:
+  application_vars: # Variables to which the weights will be applied (could differ from training vars if sample is different)
+    - "B_DTF_Jpsi_P"
+    - "B_DTF_Jpsi_PT"
+    - "nPVs"
+    - "nLongTracks"
+  training_vars:
+    - "B_DTF_Jpsi_P"
+    - "B_DTF_Jpsi_PT"
+    - "nPVs"
+    - "nLongTracks"
+  monitoring_vars:
+    - "B_PHI"
+    - "B_ETA"
+
+reweighting:
+  method: "XGB"
+  application_sample: "bd_jpsikst_ee"                 # Label for the sample used
+  training_sample: "bd_jpsikst_ee"                    # Label for the sample used for training (can be different from application_sample if desired)
+  weightsdir: "weights"                               # Overrides MCREWEIGHTS_DATA_ROOT
+  plotdir: "plots"                                    # Directory for saving plots
+
+output:
+  output_path: "test_applied_weights.root"            # Path to save the output ROOT file with applied weights
+  output_ntuple: "TTree"                              # Supports also RNTuples
+  output_tree: "DecayTree"
+  weights_name: "mult_and_kin_weights_XGB"            # Name of the branch to store the applied weights in the output ROOT file
