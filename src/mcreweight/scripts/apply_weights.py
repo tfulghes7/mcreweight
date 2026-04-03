@@ -118,7 +118,11 @@ def build_parser():
     )
 
     parser.add_argument("--config", help="YAML configuration file")
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate configuration without running the application pipeline",
+    )
     parser.add_argument(
         "--verbosity",
         help="Level of verbosity for logging",
@@ -185,8 +189,14 @@ def build_parser():
     parser.add_argument(
         "--application-sample", help="Name of the application sample (overrides config)"
     )
-    parser.add_argument("--weightsdir", help="Directory for weights (overrides config)")
-    parser.add_argument("--plotdir", help="Directory for plots (overrides config)")
+    parser.add_argument(
+        "--weightsdir",
+        help="Root directory containing trained artifacts; '<training-sample>/' is read and '<application-sample>/' is written automatically (overrides config)",
+    )
+    parser.add_argument(
+        "--plotdir",
+        help="Root directory for plots; an '<application-sample>/' subdirectory is created automatically (overrides config)",
+    )
 
     # Output
     parser.add_argument(

@@ -61,7 +61,9 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
         path (list): List of paths to the ROOT files.
         tree (str): Name of the tree to read from.
         columns (list): List of column names or expressions (e.g. ["pt", "log(pt)", "pt/eta"]).
-        weights_col (str, optional): Name of the column containing weights.
+        weights_col (str, optional): Name of the column containing weights, or a
+            mathematical expression built from branch names (e.g. ``"w1*w2"``,
+            ``"w1/w2"``, ``"log(w1)"``).
 
     Returns:
         df (pd.DataFrame): DataFrame with evaluated columns.
@@ -81,7 +83,12 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
             needed_vars.add(col)
 
     if weights_col:
-        needed_vars.add(weights_col)
+        if any(op in weights_col for op in "+-*/") or re.search(
+            r"\b[a-zA-Z_]\w*\s*\(", weights_col
+        ):
+            needed_vars.update(extract_variables_from_expression(weights_col))
+        else:
+            needed_vars.add(weights_col)
 
     def _to_dataframe(obj):
         if isinstance(obj, pd.DataFrame):
@@ -106,7 +113,15 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
                 f"Failed to evaluate expression '{expr}' for column '{name}': {e}"
             )
 
-    weights = df[weights_col].values if weights_col else np.ones(len(df))
+    if weights_col:
+        if any(op in weights_col for op in "+-*/") or re.search(
+            r"\b[a-zA-Z_]\w*\s*\(", weights_col
+        ):
+            weights = ne.evaluate(weights_col, local_dict=df)
+        else:
+            weights = df[weights_col].values
+    else:
+        weights = np.ones(len(df))
     out_df.replace([np.inf, -np.inf], np.nan, inplace=True)
     mask = out_df.notna().all(axis=1) & np.isfinite(weights)
     out_df = out_df.loc[mask].reset_index(drop=True)
@@ -242,4 +257,4 @@ def read_x_labels(path):
     Read x-axis labels from a YAML file.
     """
     with open(Path(path), "r") as f:
-        return yaml.safe_load(f)
+        return yaml.safe_load(f) or {}

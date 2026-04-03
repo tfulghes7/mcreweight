@@ -1,10 +1,9 @@
 Reweighting methods
 ===================
 
-This page summarizes the reweighting backends implemented in ``mcreweight``,
-describes how each method updates Monte Carlo event weights, and highlights the
-main differences with the reference algorithms documented in
-`hep_ml.reweight <https://arogozhnikov.github.io/hep_ml/reweight.html>`_.
+This page describes the reweighting backends implemented in ``mcreweight`` and
+how each method computes new MC event weights. Where relevant, differences with
+`hep_ml.reweight <https://arogozhnikov.github.io/hep_ml/reweight.html>`_ are noted.
 
 Overview
 --------
@@ -35,26 +34,20 @@ Histogram method
   - ``Bins``: N-dimensional histogram ratio reweighter with neighbor
     smoothing.
 
-Another useful way to compare the methods is by implementation strategy:
+Quick selection guide:
 
-- choose ``GB`` or ``Folding`` if you want the closest behavior to the original
-  ``hep_ml`` package;
-- choose ``ONNXGB`` or ``ONNXFolding`` if you want hep_ml-like boosting logic
-  together with ONNX export;
-- choose ``XGB`` or ``NN`` if you want iterative density-ratio correction based
-  on a sequence of classifiers;
-- choose ``XGBFolding``, ``NNFolding``, or ``ONNXFolding`` if you want the same
-  base logic but with K-fold training to reduce application bias;
-- choose ``Bins`` if you want a transparent non-parametric baseline based on
-  binned ratios rather than learned trees or neural networks.
+- ``GB`` / ``Folding``: closest to the original ``hep_ml`` package;
+- ``ONNXGB`` / ``ONNXFolding``: same boosting logic as ``hep_ml`` but ONNX-exportable;
+- ``XGB`` / ``NN``: iterative classifier-ratio correction;
+- ``XGBFolding`` / ``NNFolding`` / ``ONNXFolding``: K-fold variants to reduce bias;
+- ``Bins``: non-parametric histogram-ratio baseline, best for low dimensions.
 
 All methods follow the same high-level workflow:
 
 1. split MC and data into training and testing subsets;
 2. fit the selected reweighter on the training subset;
 3. predict new MC weights;
-4. clip only clearly extreme predicted weights, above roughly
-   :math:`\mu + 5\sigma`, for stability;
+4. clip very large predicted weights to the 99th percentile for stability;
 5. save both the trained model and the produced weight arrays.
 
 The training entry points live in ``src/mcreweight/train.py`` and the ONNX-based
@@ -67,34 +60,26 @@ Method-by-method behavior
 GB
 ~~
 
-``GB`` delegates training to ``hep_ml.reweight.GBReweighter``. This is the
-closest option to the canonical ``hep_ml`` implementation. In practice it is the
-reference behavior in this package:
-
-- the loss and tree-update rules come from ``hep_ml``;
-- the trained object is serialized with ``joblib``;
-- weight prediction is done through ``hep_ml``'s own ``predict_weights``.
-
-Choose this method when exact compatibility with the original ``hep_ml``
-gradient-boosted reweighter matters more than ONNX exportability.
+``GB`` is a thin wrapper around ``hep_ml.reweight.GBReweighter``. All loss and
+tree-update logic comes from ``hep_ml``; the trained object is serialized with
+``joblib`` and weights are predicted via ``hep_ml``'s own ``predict_weights``.
+Use this when compatibility with the original ``hep_ml`` implementation is the
+primary requirement.
 
 ONNXGB
 ~~~~~~
 
-``ONNXGB`` is a custom implementation of the ``GBReweighter`` idea. It is not a
-generic classifier-to-ratio method. Instead, it mirrors the signed-weight loss
-construction used by ``hep_ml``:
+``ONNXGB`` reimplements the ``GBReweighter`` logic with plain scikit-learn
+regression trees so that every stage can be exported to ONNX. It is not a
+generic classifier-to-ratio method: it mirrors the signed-weight boosting
+strategy of ``hep_ml`` directly.
 
-- original and target events are concatenated into one sample;
-- labels are ``1`` for original MC and ``0`` for target data;
-- signed sample weights are normalized class-by-class;
-- each stage trains a regression tree on class/sign residuals;
-- the tree leaves are replaced with logarithmic weight-ratio updates;
-- the final event weight is ``original_weight * exp(score)``.
+At each stage, MC and data are concatenated, a regression tree is fit on signed
+residuals (MC label ``1``, data label ``0``, with per-class weight normalization),
+and the leaf values are replaced with the log ratio of target to original
+weighted occupancies. The final event weight is ``original_weight * exp(score)``.
 
-The important point is that the tree is first trained to separate the two
-classes and is then rewritten at leaf level to encode the local target-to-MC
-weight ratio. The regularized leaf update is
+The leaf update is regularized as follows:
 
 .. math::
 
@@ -102,45 +87,33 @@ weight ratio. The regularized leaf update is
    \log\left(w_{\mathrm{target}} + \lambda\right) -
    \log\left(w_{\mathrm{original}} + \lambda\right),
 
-where ``lambda`` is ``loss_regularization``.
+where ``lambda`` is ``loss_regularization``. Adding ``lambda`` prevents infinite
+updates in empty or nearly empty leaves and keeps the correction well-behaved.
 
-This has two practical effects:
+The key differences from the other methods:
 
-- empty or nearly empty leaves do not produce infinite updates;
-- the model stays close to the symmetrized density-ratio logic used in
-  ``hep_ml``.
-
-Compared with ``GB``, the main difference is implementation, not intent:
-
-- ``GB`` uses the external ``hep_ml`` estimator directly;
-- ``ONNXGB`` reimplements the same idea with plain scikit-learn regression trees
-  so that each stage can be exported to ONNX.
-- unlike ``XGB``, the fit path keeps the signed-weight logic instead of forcing
-  training weights to be positive.
+- vs. ``GB``: same intent, different implementation — ``ONNXGB`` uses scikit-learn
+  trees instead of the external ``hep_ml`` estimator, enabling ONNX export;
+- vs. ``XGB``/``NN``: keeps the signed-weight boosting logic rather than converting
+  classifier probabilities into log-ratio updates.
 
 XGB
 ~~~
 
-``XGB`` uses a different training philosophy. Instead of reproducing the
-``hep_ml`` loss, it performs iterative density-ratio correction through a
-sequence of binary classifiers.
+``XGB`` estimates the density ratio between data and MC through an iterative
+sequence of binary classifiers, rather than reproducing the ``hep_ml`` loss.
+A single classifier often captures only the dominant separation; by refitting
+after each weight update, the method progressively corrects the residual
+mismatch in the already-reweighted sample.
 
-The iterative design is intentional. A single classifier pass usually captures
-only the largest separation between MC and data. After that first correction,
-the residual mismodelling changes: events that were obviously mismodelled become
-less informative, and smaller localized discrepancies start to dominate. By
-refitting after every update, the method keeps chasing the remaining mismatch in
-the newly reweighted sample instead of trying to solve the whole density-ratio
-problem in one aggressive step.
-
-At iteration :math:`t`:
+At each iteration :math:`t`:
 
 1. MC events carry their current weights :math:`w_t(x)`;
 2. data events keep fixed target weights;
-3. a classifier is trained to distinguish MC from data;
-4. the classifier output :math:`p_t(x)` for the MC class is converted into a
+3. an ``xgboost.XGBClassifier`` is trained to distinguish MC from data;
+4. its output probability :math:`p_t(x)` for the MC class is converted into a
    log-ratio correction;
-5. the MC weights are updated multiplicatively.
+5. MC weights are updated multiplicatively.
 
 The stage update is
 
@@ -161,89 +134,73 @@ and the final weights are
 
    w(x) = \exp\left(\mathrm{clip}(\log w_0(x) + F(x), -m, m)\right).
 
-Here:
+where ``eta`` = ``mixing_learning_rate``, ``c`` = ``clip_delta``, and
+``m`` = ``max_log_weight``.
 
-- ``eta`` is ``mixing_learning_rate``;
-- ``c`` is ``clip_delta``;
-- ``m`` is ``max_log_weight``.
+Intuitively, :math:`\delta_t(x)` is positive when the classifier finds the event
+more data-like (weight should increase) and negative when it finds it more
+MC-like (weight should decrease). The learning rate ``eta`` and clip bounds
+prevent any single stage from making an extreme correction.
 
-In other words, each stage learns a residual correction in log-weight space.
-The classifier does not directly predict the final event weight. It predicts
-where the current reweighted MC sample is still too dense or too sparse with
-respect to data, and that information is converted into the next multiplicative
-update.
-
-This method behaves more like iterative classifier-based reweighting than
-classical ``hep_ml`` gradient boosting. The base learner is
-``xgboost.XGBClassifier``, and the code adjusts ``scale_pos_weight`` at each
-stage to reflect the current weighted class balance. For estimator
-compatibility, negative training weights are clipped to zero before fitting.
+At each stage ``scale_pos_weight`` is updated to reflect the current weighted
+class balance, and negative training weights are clipped to zero for
+estimator compatibility.
 
 NN
 ~~
 
-``NN`` follows exactly the same iterative update rule as ``XGB``, but the stage
-classifier is a multilayer perceptron:
+``NN`` uses exactly the same iterative log-ratio update as ``XGB``, with an
+``sklearn.neural_network.MLPClassifier`` as the stage classifier instead of
+``XGBClassifier``. All clipping and damping parameters work identically.
 
-- base estimator: ``sklearn.neural_network.MLPClassifier``;
-- same probability-to-log-ratio update;
-- same clipping of stage corrections;
-- same cumulative log-weight cap.
-
-Depending on the installed scikit-learn version, ``MLPClassifier`` may not
-accept ``sample_weight``. In that case the implementation falls back to
-unweighted stage fits and prints a warning.
-
-This backend is useful when smoother, non-tree decision boundaries are desired.
-Its statistical objective is still classifier-based density-ratio estimation,
-not the specialized ``hep_ml`` boosting loss.
+If the installed scikit-learn version does not accept ``sample_weight`` in
+``MLPClassifier``, the implementation falls back to unweighted stage fits and
+prints a warning. Use this method when smooth, non-tree decision boundaries are
+preferred.
 
 Bins
 ~~~~
 
-``Bins`` computes a direct histogram ratio in transformed feature space.
-
-The procedure is:
+``Bins`` computes the density ratio as a direct N-dimensional histogram ratio
+in transformed feature space:
 
 1. fit the configured feature transform on the combined MC+data sample;
 2. define per-variable bin edges from target-data quantiles;
-3. fill MC and data histograms with weighted counts;
-4. smooth both histograms by repeated averaging with immediate neighbors;
-5. compute the ratio ``H_data / H_mc`` with a safety floor and epsilon
-   regularization;
-6. assign each event the ratio of the bin into which it falls.
+3. fill weighted MC and data histograms;
+4. smooth both histograms by averaging with immediate neighbors;
+5. compute ``H_data / H_mc`` with epsilon regularization to avoid division by zero;
+6. assign each event the ratio value of its bin.
 
-This is the simplest and most interpretable method in the package, but it
-inherits the usual curse of dimensionality of binned reweighting and should only
-be trusted in low dimensions.
+This is the most transparent method in the package. Because bin counts grow
+exponentially with the number of dimensions, it is only reliable for a small
+number of training variables. In practice it is strongest in one or two
+dimensions, can still be useful up to roughly four with enough population, and
+should otherwise be treated as a rough baseline rather than the default choice.
 
 Folding variants
 ~~~~~~~~~~~~~~~~
 
-``Folding``, ``ONNXFolding``, ``XGBFolding``, and ``NNFolding`` wrap a base
-reweighter inside a K-fold procedure.
+The ``Folding`` variants (``Folding``, ``ONNXFolding``, ``XGBFolding``,
+``NNFolding``) wrap a base reweighter in a K-fold procedure. Each fold is
+trained on ``n_folds - 1`` subsets and applied to the held-out subset, so that
+every event receives a weight from a model that was not trained on it. This
+reduces the bias that arises when weights are predicted on the same data used
+for training.
 
-The purpose is to reduce bias when predicting weights for the same sample used
-to train the reweighter. Each fold is trained on ``n_folds - 1`` subsets and is
-validated on the held-out subset.
+The folding variants differ in how fold predictions are aggregated:
 
-The folding implementations differ in aggregation:
+``hep_ml`` folding (``Folding``)
+  Delegates to ``hep_ml.reweight.FoldingReweighter``; predictions are
+  effectively out-of-fold when the same dataset is passed back in order.
 
-``hep_ml`` folding
-  Uses the behavior of ``hep_ml.reweight.FoldingReweighter``. When the same
-  dataset is passed back in the same order, predictions are effectively
-  out-of-fold.
+``mcreweight`` ONNX folding (``ONNXFolding``, ``XGBFolding``, ``NNFolding``)
+  Trains one model per fold and combines predictions across folds. Available
+  aggregation modes:
 
-``mcreweight`` ONNX folding
-  Trains one model per fold, computes a validation metric for each fold, and by
-  default combines fold predictions with a weighted geometric mean. Fold weights
-  are proportional to the inverse of the fold validation error.
-
-The available aggregation modes for ONNX folding are:
-
-- ``weighted_geometric``;
-- ``geometric``;
-- ``median``.
+  - ``weighted_geometric`` (default): geometric mean weighted by the inverse
+    of each fold's validation error;
+  - ``geometric``: unweighted geometric mean;
+  - ``median``: per-event median across folds.
 
 Data visualization and diagnostics
 ----------------------------------
@@ -401,110 +358,74 @@ its correction and in which direction they influence the learned weights.
 Loss function and update mechanics
 ----------------------------------
 
-There are really two different loss families in this package.
+Two distinct loss families are used across the methods.
 
 ``hep_ml``-style signed boosting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Used by ``GB`` and reimplemented by ``ONNXGB``.
 
-The idea is to fit an additive model for the logarithm of the density ratio
-between target and original samples. The implementation in ``ONNXGB`` closely
-follows the ``hep_ml`` documentation and its signed-weight boosting strategy:
+The goal is to fit an additive model for :math:`\log(p_{\text{data}}/p_{\text{MC}})`,
+the logarithm of the density ratio. At each stage:
 
-- weights are normalized separately inside each class;
-- the current event importance is updated as ``sample_weight * exp(y * score)``;
-- tree fitting uses the absolute normalized weights;
-- leaf values are recomputed from the ratio of target and original weighted
-  occupancies in each leaf.
+- event weights are normalized separately per class;
+- the current event importance is updated as ``sample_weight * exp(y * score)``,
+  where ``y`` is ``+1`` for MC and ``-1`` for data;
+- trees are fit on the absolute normalized weights;
+- leaf values are rewritten from the ratio of target to original weighted
+  occupancies.
 
-This makes the tree structure respond to where the samples differ, while the
-leaf update converts that structure into a direct correction of the MC density.
+The tree structure captures where the samples differ; the leaf rewrite converts
+that structure into a direct density-ratio correction.
 
 Classifier-ratio iterative updates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Used by ``XGB`` and ``NN``.
 
-These methods do not define a custom tree loss. Instead they repeatedly solve a
-weighted binary classification problem between MC and data and convert the
-classifier probability into an estimate of the log density ratio. If the
-classifier predicts:
+Instead of a custom boosting loss, these methods solve a weighted binary
+classification problem between MC and data at each stage and convert the
+classifier output into a log density-ratio estimate. The sign is intuitive:
 
-- ``p(x) > 0.5`` for the MC class, the event looks too MC-like and its weight is
-  pushed down;
-- ``p(x) < 0.5`` for the MC class, the event looks more data-like and its weight
-  is pushed up.
+- ``p(x) > 0.5`` for the MC class → event looks too MC-like → weight decreases;
+- ``p(x) < 0.5`` for the MC class → event looks more data-like → weight increases.
 
-The clipping controls are important:
+The three numerical controls in the update equations serve distinct purposes:
 
-- ``clip_delta`` limits any single stage from making an extreme correction;
-- ``max_log_weight`` caps the total accumulated log-weight;
-- ``mixing_learning_rate`` slows the update to stabilize training.
+- ``clip_delta``: prevents any single stage from making an overconfident jump;
+- ``max_log_weight``: caps the total accumulated log-weight globally;
+- ``mixing_learning_rate``: dampens each stage correction to stabilize training.
 
-The iterative procedure is optimizing the reweighting process through several
-different kinds of corrections:
-
-- residual density-ratio corrections:
-  each stage is trained on the currently reweighted MC sample, so it focuses on
-  the mismatch that remains after previous updates rather than re-learning the
-  same dominant discrepancy;
-- class-imbalance corrections:
-  the stage weights are normalized by class, and the XGBoost backend also
-  updates ``scale_pos_weight`` dynamically so that the classifier remains well
-  behaved as MC weights evolve;
-- local correction caps:
-  the log-ratio update from each stage is clipped with ``clip_delta`` to avoid
-  unstable jumps caused by overconfident classifier outputs;
-- global regularization of the accumulated solution:
-  ``max_log_weight`` prevents the full sequence of updates from driving event
-  weights to numerically extreme values;
-- validation-driven correction control:
-  the model keeps only making additional corrections while the validation mean
-  KS continues to improve.
+Because each stage is trained on the currently reweighted MC, it targets only
+the residual mismatch left by previous updates, rather than re-learning the
+same dominant discrepancy.
 
 Validation and early stopping
 -----------------------------
 
-The iterative ONNX methods add a validation loop that is not part of the
-original ``hep_ml`` API.
+The iterative ONNX methods (``ONNXGB``, ``XGB``, ``NN``) add a validation loop
+that is not part of the original ``hep_ml`` API.
 
-During training, a validation subset is held out and the package computes the
-mean of the one-dimensional weighted Kolmogorov-Smirnov distances across all
-training variables. Early stopping is triggered when this mean KS metric stops
-improving for ``reweight_early_stopping_rounds`` checks.
+At each stage, the mean weighted Kolmogorov-Smirnov distance across all
+training variables is computed on a held-out validation subset. Training stops
+early when this mean KS fails to improve for ``reweight_early_stopping_rounds``
+consecutive checks.
 
-This gives the iterative methods a direct physics-motivated stopping criterion:
-the model is not just trying to improve classifier loss, it is trying to reduce
-observable mismatches between reweighted MC and target data.
+This provides a physics-motivated stopping criterion: the model stops when it
+no longer reduces observable MC-to-data mismatches, not just when classifier
+loss plateaus.
 
 Optuna hyperparameter optimization
 ----------------------------------
 
-When ``n_trials`` is greater than zero, ``mcreweight`` runs an Optuna study
-before the final training step. The tuning logic is implemented in
-``src/mcreweight/optuna.py`` and supports four classifier families:
+When ``n_trials > 0``, ``mcreweight`` runs an Optuna study before the final
+training step, supporting ``GB``, ``ONNXGB``, ``XGB``, and ``NN``.
 
-- ``GB``
-- ``ONNXGB``
-- ``XGB``
-- ``NN``
-
-The study objective is the output of
-``mcreweight.utils.utils.evaluate_reweighting`` applied after reweighting. In
-practice, for each trial the package:
-
-1. samples a set of hyperparameters;
-2. trains the candidate reweighter on the full MC and data samples;
-3. predicts reweighted MC event weights;
-4. evaluates how well a fresh classifier can still separate reweighted MC from
-   data;
-5. minimizes the resulting score.
-
-Because ``evaluate_reweighting`` returns the AUC of a classifier trained to
-distinguish reweighted MC from data, smaller values are better. A perfectly
-matched reweighted sample should be harder to distinguish from data than a
-poorly reweighted one.
+For each trial, the package trains the candidate reweighter, predicts new MC
+weights, then measures how well a fresh classifier can still separate the
+reweighted MC from data. The objective is the AUC of that diagnostic classifier:
+lower is better, since a well-reweighted sample should be harder to distinguish
+from data. Studies are run with Optuna's TPE sampler (``seed=42``).
 
 The sampler is Optuna's TPE sampler with ``seed=42``, and the study direction
 is ``minimize``.

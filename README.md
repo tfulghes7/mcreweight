@@ -3,7 +3,7 @@
 `mcreweight` is a Python package for Monte Carlo event reweighting to match data distributions in multiplicity and kinematic variables. It provides multiple reweighting backends, including `hep_ml`-based gradient boosting, XGBoost, neural-network approaches, folding variants, and bin-based reweighting, with optional Optuna hyperparameter tuning and integrated plotting/validation utilities.
 
 > [!WARNING]
-Bins reweighting works fine for one or two dimensional histograms, but it is unstable and inaccurate for higher dimenstions 
+`Bins` reweighting is a useful low-dimensional baseline, but it becomes unstable quickly as the number of training variables grows. Prefer it for one or two dimensions, use extra care around three or four, and avoid relying on it as the main method in higher-dimensional problems.
 
 ## Documentation
 
@@ -88,6 +88,12 @@ Both CLIs support two usage modes:
 
 Use `--dry-run` to validate the merged configuration without running.
 
+Both CLIs treat `weightsdir` and `plotdir` as root directories:
+
+- `run-reweight` writes to `<weightsdir>/<sample>/` and `<plotdir>/<sample>/`
+- `apply-weights` reads trained artifacts from `<weightsdir>/<training-sample>/`
+- `apply-weights` writes normalized weights to `<weightsdir>/<application-sample>/` and plots to `<plotdir>/<application-sample>/`
+
 To run reweighting do it via configuration file:
 
 ```bash
@@ -166,8 +172,8 @@ Reweighting:
 - `--shap`: Enable SHAP computation
 
 Output:
-- `--weightsdir`: Weights root directory; if omitted, `MCREWEIGHTS_DATA_ROOT` is used
-- `--plotdir`: Plot output directory (default: `plots`)
+- `--weightsdir`: Root directory for training artifacts; `<sample>/` is created automatically. If omitted, `MCREWEIGHTS_DATA_ROOT` is used
+- `--plotdir`: Root directory for plots; `<sample>/` is created automatically (default: `plots`)
 
 Additional options can be found by running:
 ```bash
@@ -199,8 +205,8 @@ Reweighting:
 - `--method`: Method (`GB`, `XGB`, `NN`, `Folding`, `XGBFolding`, `NNFolding`, `Bins`), default `XGB`
 - `--training-sample`: Training sample tag (default: `bd_jpsikst_ee`)
 - `--application-sample`: Application sample tag (default: `bd_jpsikst_ee`)
-- `--weightsdir`: Weights root directory; if omitted, `MCREWEIGHTS_DATA_ROOT` is used
-- `--plotdir`: Plot output directory (default: `plots`)
+- `--weightsdir`: Root directory for trained artifacts; `<training-sample>/` is read and `<application-sample>/` is written automatically. If omitted, `MCREWEIGHTS_DATA_ROOT` is used
+- `--plotdir`: Root directory for plots; `<application-sample>/` is created automatically (default: `plots`)
 
 Output:
 - `--output-path`: Output ROOT file path

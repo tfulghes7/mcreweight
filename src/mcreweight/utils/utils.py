@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 import warnings
@@ -5,6 +6,316 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import PowerTransformer, QuantileTransformer, StandardScaler
 import shap
+
+
+# ── Coverage / extrapolation diagnostics ──────────────────────────────────────
+
+
+def _print_warning_block(lines):
+    print("\n[WARNING] ══════════════════════════════════════════════════════════")
+    for line in lines:
+        print(f"[WARNING]  {line}")
+    print("[WARNING] ══════════════════════════════════════════════════════════\n")
+
+
+def check_coverage(
+    mc, data, columns, mc_weights=None, data_weights=None, quantile=0.01
+):
+    """
+    Compare the per-variable ranges of MC and data and emit WARNING-level messages
+    for any variable where one sample extends beyond the other.
+
+    The check uses weighted ``quantile`` and ``1-quantile`` as effective range
+    boundaries so that statistical edge effects from sparse tails are suppressed.
+
+    Args:
+        mc (pd.DataFrame): MC feature frame.
+        data (pd.DataFrame): Data feature frame.
+        columns (list[str]): Variables to check.
+        mc_weights (np.ndarray, optional): Event weights for MC.
+        data_weights (np.ndarray, optional): Event weights for data.
+        quantile (float): Quantile used as the effective lower/upper boundary (default 0.01).
+    """
+    mc_w = mc_weights if mc_weights is not None else np.ones(len(mc))
+    da_w = data_weights if data_weights is not None else np.ones(len(data))
+
+    issues = []
+    for col in columns:
+        mc_vals = mc[col].values
+        da_vals = data[col].values
+
+        mc_lo = _weighted_quantile(mc_vals, mc_w, quantile)
+        mc_hi = _weighted_quantile(mc_vals, mc_w, 1.0 - quantile)
+        da_lo = _weighted_quantile(da_vals, da_w, quantile)
+        da_hi = _weighted_quantile(da_vals, da_w, 1.0 - quantile)
+
+        msg_parts = []
+        if mc_lo < da_lo:
+            frac = np.sum((mc_vals < da_lo) * mc_w) / mc_w.sum()
+            msg_parts.append(
+                f"MC below data range  (MC {quantile*100:.0f}%={mc_lo:.4g} < "
+                f"data {quantile*100:.0f}%={da_lo:.4g},"
+                f" {frac*100:.1f}% of weighted MC events)"
+            )
+        if mc_hi > da_hi:
+            frac = np.sum((mc_vals > da_hi) * mc_w) / mc_w.sum()
+            msg_parts.append(
+                f"MC above data range  (MC {(1-quantile)*100:.0f}%={mc_hi:.4g} > "
+                f"data {(1-quantile)*100:.0f}%={da_hi:.4g},"
+                f" {frac*100:.1f}% of weighted MC events)"
+            )
+        if da_lo < mc_lo:
+            frac = np.sum((da_vals < mc_lo) * da_w) / da_w.sum()
+            msg_parts.append(
+                f"data below MC range  (data {quantile*100:.0f}%={da_lo:.4g} < "
+                f"MC {quantile*100:.0f}%={mc_lo:.4g},"
+                f" {frac*100:.1f}% of weighted data events)"
+            )
+        if da_hi > mc_hi:
+            frac = np.sum((da_vals > mc_hi) * da_w) / da_w.sum()
+            msg_parts.append(
+                f"data above MC range  (data {(1-quantile)*100:.0f}%={da_hi:.4g} > "
+                f"MC {(1-quantile)*100:.0f}%={mc_hi:.4g},"
+                f" {frac*100:.1f}% of weighted data events)"
+            )
+        if msg_parts:
+            issues.append((col, msg_parts))
+
+    if issues:
+        _print_warning_block(
+            [
+                "MC and data do not fully overlap in the following variables.",
+                "The reweighter will have to extrapolate in the uncovered regions.",
+                "Large uncovered fractions usually mean the model is weakly",
+                "constrained there. Consider tightening the phase-space",
+                "selection, reducing the number of training variables, or",
+                "avoiding the Bins method in higher-dimensional problems.",
+            ]
+        )
+        for col, parts in issues:
+            print(f"[WARNING]    {col}:")
+            for p in parts:
+                print(f"[WARNING]      • {p}")
+        print()
+    else:
+        print(
+            "[INFO] Coverage check passed: MC and data overlap within "
+            f"the [{quantile*100:.0f}%, {(1-quantile)*100:.0f}%] quantile range "
+            "for all training variables."
+        )
+
+
+def check_extrapolation(
+    mc_apply,
+    mc_train,
+    columns,
+    mc_apply_weights=None,
+    mc_train_weights=None,
+    quantile=0.01,
+):
+    """
+    Check whether the MC sample being reweighted extends beyond the phase-space
+    region seen during training. Emits WARNING-level messages per variable with
+    the fraction of events that fall outside the training range.
+
+    Args:
+        mc_apply (pd.DataFrame): MC features of the sample to be reweighted.
+        mc_train (pd.DataFrame): MC features used during training.
+        columns (list[str]): Variables to check.
+        mc_apply_weights (np.ndarray, optional): Event weights for the application MC.
+        mc_train_weights (np.ndarray, optional): Event weights for the training MC.
+        quantile (float): Quantile used as effective boundary (default 0.01).
+    """
+    app_w = mc_apply_weights if mc_apply_weights is not None else np.ones(len(mc_apply))
+    trn_w = mc_train_weights if mc_train_weights is not None else np.ones(len(mc_train))
+
+    issues = []
+    for col in columns:
+        app_vals = mc_apply[col].values
+        trn_vals = mc_train[col].values
+
+        trn_lo = _weighted_quantile(trn_vals, trn_w, quantile)
+        trn_hi = _weighted_quantile(trn_vals, trn_w, 1.0 - quantile)
+
+        below_mask = app_vals < trn_lo
+        above_mask = app_vals > trn_hi
+        frac_below = np.sum(below_mask * app_w) / app_w.sum()
+        frac_above = np.sum(above_mask * app_w) / app_w.sum()
+        frac_total = frac_below + frac_above
+
+        if frac_total > 0:
+            issues.append((col, trn_lo, trn_hi, frac_below, frac_above, frac_total))
+
+    if issues:
+        _print_warning_block(
+            [
+                "The MC sample to reweight contains events outside the training",
+                "phase-space region (extrapolation detected).",
+                "Weights assigned to these events are less reliable because the",
+                "model did not see comparable training examples there.",
+            ]
+        )
+        for col, lo, hi, fb, fa, ft in issues:
+            print(f"[WARNING]    {col}:  training range [{lo:.4g}, {hi:.4g}]")
+            if fb > 0:
+                print(
+                    f"[WARNING]      • {fb*100:.2f}% of weighted events below training range"
+                )
+            if fa > 0:
+                print(
+                    f"[WARNING]      • {fa*100:.2f}% of weighted events above training range"
+                )
+            print(f"[WARNING]      • {ft*100:.2f}% extrapolating in total")
+        print(
+            "[WARNING]  Consider retraining with a phase-space definition closer"
+            " to the application sample if these fractions are non-negligible.\n"
+        )
+    else:
+        print(
+            "[INFO] Extrapolation check passed: all application MC events lie within "
+            f"the [{quantile*100:.0f}%, {(1-quantile)*100:.0f}%] training range "
+            "for all variables."
+        )
+
+
+def check_weights_for_nans(weights, label="weights"):
+    """
+    Check a weight array for NaN / Inf values and emit a WARNING if any are found.
+
+    Args:
+        weights (np.ndarray): The weight array to check.
+        label (str): Human-readable name for the array used in the message.
+    """
+    weights = np.asarray(weights, dtype=float)
+    nan_mask = ~np.isfinite(weights)
+    n_bad = int(nan_mask.sum())
+    if n_bad > 0:
+        frac = n_bad / len(weights)
+        _print_warning_block(
+            [
+                f"{n_bad} ({frac*100:.2f}%) non-finite values found in {label}.",
+                "These events will carry undefined weights in the saved output.",
+                "Inspect the input variables, weight expressions, and any",
+                "extreme extrapolation before using the result downstream.",
+            ]
+        )
+    return n_bad
+
+
+def _weighted_quantile(values, weights, q):
+    """Compute the weighted quantile of a 1-D array."""
+    sorter = np.argsort(values)
+    sorted_vals = values[sorter]
+    sorted_w = weights[sorter]
+    cumulative = np.cumsum(sorted_w)
+    cumulative /= cumulative[-1]
+    return float(np.interp(q, cumulative, sorted_vals))
+
+
+def save_training_ranges(
+    mc, data, columns, mc_weights, data_weights, path, quantile=0.01
+):
+    """
+    Compute and save per-variable effective training boundaries to a JSON file.
+
+    The boundaries are the weighted ``quantile`` and ``1-quantile`` from the
+    combined MC+data training sample, so they reflect the joint phase-space
+    region the model was exposed to.
+
+    Args:
+        mc (pd.DataFrame): Training MC features.
+        data (pd.DataFrame): Training data features.
+        columns (list[str]): Variables to record.
+        mc_weights (np.ndarray): MC event weights.
+        data_weights (np.ndarray): Data event weights.
+        path (str): Output JSON file path.
+        quantile (float): Tail quantile (default 0.01).
+    """
+    mc_w = mc_weights if mc_weights is not None else np.ones(len(mc))
+    da_w = data_weights if data_weights is not None else np.ones(len(data))
+
+    boundaries = {}
+    for col in columns:
+        vals = np.concatenate([mc[col].values, data[col].values])
+        wts = np.concatenate([mc_w, da_w])
+        lo = _weighted_quantile(vals, wts, quantile)
+        hi = _weighted_quantile(vals, wts, 1.0 - quantile)
+        boundaries[col] = [lo, hi]
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"quantile": quantile, "boundaries": boundaries}, f, indent=2)
+
+
+def check_extrapolation_from_ranges(
+    mc_apply, boundaries, columns, mc_apply_weights=None
+):
+    """
+    Check whether the MC sample being reweighted extends beyond the phase-space
+    region seen during training, using pre-computed training boundaries loaded
+    from the JSON file written by :func:`save_training_ranges`.
+
+    Emits WARNING-level messages per variable with the fraction of events that
+    fall outside the training range.
+
+    Args:
+        mc_apply (pd.DataFrame): MC features of the sample to be reweighted.
+        boundaries (dict): Mapping ``{column: [lo, hi]}`` as loaded from the
+            training-ranges JSON file.
+        columns (list[str]): Variables to check.
+        mc_apply_weights (np.ndarray, optional): Event weights for the application MC.
+    """
+    app_w = mc_apply_weights if mc_apply_weights is not None else np.ones(len(mc_apply))
+    quantile = boundaries.get("quantile", 0.01)
+    bounds = boundaries["boundaries"]
+
+    issues = []
+    for col in columns:
+        if col not in bounds:
+            continue
+        lo, hi = bounds[col]
+        app_vals = mc_apply[col].values
+
+        below_mask = app_vals < lo
+        above_mask = app_vals > hi
+        frac_below = np.sum(below_mask * app_w) / app_w.sum()
+        frac_above = np.sum(above_mask * app_w) / app_w.sum()
+        frac_total = frac_below + frac_above
+
+        if frac_total > 0:
+            issues.append((col, lo, hi, frac_below, frac_above, frac_total))
+
+    if issues:
+        _print_warning_block(
+            [
+                "The MC sample to reweight contains events outside the training",
+                "phase-space region (extrapolation detected).",
+                "Training boundaries were computed at the"
+                f" [{quantile*100:.0f}%, {(1-quantile)*100:.0f}%] quantile level.",
+                "Predictions in these regions are extrapolations and should be",
+                "treated with extra care in validation plots.",
+            ]
+        )
+        for col, lo, hi, fb, fa, ft in issues:
+            print(f"[WARNING]    {col}:  training range [{lo:.4g}, {hi:.4g}]")
+            if fb > 0:
+                print(
+                    f"[WARNING]      • {fb*100:.2f}% of weighted events below training range"
+                )
+            if fa > 0:
+                print(
+                    f"[WARNING]      • {fa*100:.2f}% of weighted events above training range"
+                )
+            print(f"[WARNING]      • {ft*100:.2f}% extrapolating in total")
+        print(
+            "[WARNING]  If these tails matter for the analysis, retraining with"
+            " a broader reference sample is usually safer than relying on the"
+            " extrapolated weights.\n"
+        )
+    else:
+        print(
+            "[INFO] Extrapolation check passed: all application MC events lie within "
+            "the training range for all variables."
+        )
 
 
 def fit_transform(X, transform):

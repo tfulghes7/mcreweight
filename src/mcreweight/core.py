@@ -36,7 +36,13 @@ from mcreweight.train import (
     xgbfolding,
     xgbreweight,
 )
-from mcreweight.utils.utils import update_scores_with_importance
+from mcreweight.utils.utils import (
+    check_coverage,
+    check_extrapolation_from_ranges,
+    check_weights_for_nans,
+    save_training_ranges,
+    update_scores_with_importance,
+)
 
 
 FOLDING_METHODS = {"Folding", "XGBFolding", "ONNXFolding", "NNFolding"}
@@ -491,6 +497,24 @@ def run_reweighting_pipeline(args, plotdir, weightsdir):
     x_labels = read_x_labels(resolve_x_labels_path(args.path_xlabels))
     mc, data, mc_weights, sweights = _load_training_inputs(args)
 
+    check_coverage(
+        mc=mc[args.training_vars],
+        data=data[args.training_vars],
+        columns=args.training_vars,
+        mc_weights=mc_weights,
+        data_weights=sweights,
+    )
+
+    _ranges_tag = "_".join(flatten_vars(args.training_vars))
+    save_training_ranges(
+        mc=mc[args.training_vars],
+        data=data[args.training_vars],
+        columns=args.training_vars,
+        mc_weights=mc_weights,
+        data_weights=sweights,
+        path=f"{weightsdir}/training_ranges_{_ranges_tag}.json",
+    )
+
     if len(args.training_vars) > 1:
         print("[INFO] Plotting correlation matrices...")
         plt.plot_correlation_matrix(
@@ -634,11 +658,30 @@ def apply_weights_pipeline(args, plotdir, weightsdir, out_weightsdir):
             "'ONNXFolding', 'XGB', 'XGBFolding', 'Bins', 'NN' and 'NNFolding'."
         ) from exc
 
+    # Extrapolation check: compare application MC against training phase-space boundaries
+    _ranges_file = f"{weightsdir}/training_ranges_" + "_".join(saving_vars) + ".json"
+    try:
+        with open(_ranges_file, encoding="utf-8") as _rf:
+            _boundaries = json.load(_rf)
+        check_extrapolation_from_ranges(
+            mc_apply=model_input,
+            boundaries=_boundaries,
+            columns=args.training_vars,
+            mc_apply_weights=mc_weights,
+        )
+    except FileNotFoundError:
+        print(
+            f"[WARNING] Training ranges file not found ({_ranges_file});"
+            " skipping extrapolation check for the application sample."
+        )
+
     if args.verbosity >= 1:
         print("[INFO] Applying weights to MC data...")
     new_mc_weights = _predict_application_weights(
         args.method, classifier, model_input, mc_weights
     )
+
+    check_weights_for_nans(new_mc_weights, label=f"predicted weights ({args.method})")
 
     w_normalized = new_mc_weights * (len(new_mc_weights) / np.sum(new_mc_weights))
     print("[INFO] Weights predicted successfully.")

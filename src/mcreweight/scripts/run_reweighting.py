@@ -250,7 +250,7 @@ def build_parser():
     # Output
     parser.add_argument(
         "--weightsdir",
-        help="Directory containing training weights (overrides MCREWEIGHTS_DATA_ROOT and YAML config)",
+        help="Root directory where training artifacts will be written; a '<sample>/' subdirectory is created automatically (overrides MCREWEIGHTS_DATA_ROOT and YAML config)",
     )
     parser.add_argument(
         "--plotdir", help="Directory to save plots (overrides YAML config)"

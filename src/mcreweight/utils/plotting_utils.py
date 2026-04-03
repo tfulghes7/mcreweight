@@ -19,6 +19,21 @@ MC_COLOR = "#c62828"
 MC_DARK_COLOR = "#7f0000"
 DATA_COLOR = "#000000"
 NEUTRAL_COLOR = "#666666"
+METHOD_COLORS = {
+    "GB": "#c62828",
+    "Folding": "#ef6c00",
+    "ONNXGB": "#1565c0",
+    "ONNXFolding": "#00897b",
+    "XGB": "#6a1b9a",
+    "XGBFolding": "#8e24aa",
+    "NN": "#2e7d32",
+    "NNFolding": "#558b2f",
+    "Bins": "#795548",
+}
+
+
+def _label_for(x_labels, feature_name):
+    return x_labels.get(feature_name, feature_name)
 
 
 def set_lhcb_style(grid=True, size=10, usetex=False):
@@ -102,14 +117,14 @@ def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_
         cmap="coolwarm",
         square=True,
         cbar_kws={"shrink": 0.75},
-        xticklabels=[x_labels.get(col, col) for col in columns],
-        yticklabels=[x_labels.get(col, col) for col in columns],
+        xticklabels=[_label_for(x_labels, col) for col in columns],
+        yticklabels=[_label_for(x_labels, col) for col in columns],
         annot_kws={"size": 20},
     )
     ax = plt.gca()
     ax.set_xticks(range(len(columns)))
     ax.set_xticklabels(
-        [x_labels.get(col, col) for col in columns], fontsize=22, rotation=45
+        [_label_for(x_labels, col) for col in columns], fontsize=22, rotation=45
     )
     plt.yticks(fontsize=22)
     if corr_mode == "absolute":
@@ -292,7 +307,7 @@ def plot_distributions(
         ax_pull.axhline(0, color=NEUTRAL_COLOR, linestyle="--")
         ax_pull.bar(bin_centers, pulls, width=bin_widths, color=MC_COLOR, alpha=0.6)
         ax_pull.set_ylabel("Pull")
-        ax_pull.set_xlabel(x_labels.get(col_name, col_name))
+        ax_pull.set_xlabel(_label_for(x_labels, col_name))
         ax_pull.set_ylim(-pull_clip, pull_clip)
         ax_pull.grid(True, alpha=0.3)
 
@@ -390,7 +405,7 @@ def plot_mc_distributions(
             **step_settings,
         )
         ax_main.set_ylabel("A.U.")
-        ax_main.set_xlabel(x_labels.get(column, column))
+        ax_main.set_xlabel(_label_for(x_labels, column))
         ax_main.legend()
 
     # Hide unused subplots
@@ -537,6 +552,7 @@ def plot_classifier_output(
 
         score_mc = scores[method]["MC"]
         w_mc = weights.get(method, np.ones_like(score_mc))
+        method_color = METHOD_COLORS.get(method, MC_COLOR)
 
         # KS statistic vs Data
         ks_val = weighted_ks_statistic(score_mc, score_data, w1=w_mc, w2=weights_data)
@@ -550,7 +566,7 @@ def plot_classifier_output(
             alpha=0.6,
             range=(min_score, max_score),
             label=legend_label,
-            color=MC_COLOR,
+            color=method_color,
         )
 
     # Also show Data distribution
@@ -588,6 +604,7 @@ def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):
     set_lhcb_style()
     plt.figure(figsize=(10, 7))
     for label, w in weights.items():
+        color = DATA_COLOR if label == "Data" else METHOD_COLORS.get(label, MC_COLOR)
         plt.hist(
             w,
             bins=bins,
@@ -596,6 +613,7 @@ def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):
             label=label,
             range=xlim,
             histtype="stepfilled",
+            color=color,
         )
 
     plt.xlabel("weights")
@@ -691,8 +709,8 @@ def plot_2d_score_maps(
             vmin=0,
         )
 
-        ax.set_xlabel(x_labels.get(var_x, var_x))
-        ax.set_ylabel(x_labels.get(var_y, var_y))
+        ax.set_xlabel(_label_for(x_labels, var_x))
+        ax.set_ylabel(_label_for(x_labels, var_y))
         fig.colorbar(im, ax=ax)
 
     # Hide unused axes
@@ -731,7 +749,7 @@ def plot_feature_importance(
     shap.summary_plot(
         shap_values,
         X,
-        feature_names=[x_labels[f] for f in feature_names],
+        feature_names=[_label_for(x_labels, f) for f in feature_names],
         max_display=max_display,
         show=False,
     )
@@ -861,8 +879,8 @@ def plot_2d_pull_maps(
             norm=norm,
         )
 
-        ax.set_xlabel(x_labels.get(var_x, var_x))
-        ax.set_ylabel(x_labels.get(var_y, var_y))
+        ax.set_xlabel(_label_for(x_labels, var_x))
+        ax.set_ylabel(_label_for(x_labels, var_y))
 
         cbar = fig.colorbar(im, ax=ax)
         cbar.set_label("Pull")

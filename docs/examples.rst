@@ -84,10 +84,17 @@ The config also enables:
 Expected outputs
 ~~~~~~~~~~~~~~~~
 
-By default the example writes into:
+By default the example writes into sample-specific subdirectories:
 
-- ``weights/`` for trained models and serialized weight arrays;
-- ``plots/`` for validation and diagnostic plots.
+- ``weights/bd_jpsikst_ee/`` for trained models and serialized weight arrays;
+- ``plots/bd_jpsikst_ee/`` for validation and diagnostic plots.
+
+.. warning::
+
+   ``Bins`` is included here as a lightweight baseline because the fixture uses
+   only four variables. For production use, treat it as a low-dimensional
+   method; it is much more fragile than the model-based reweighters once the
+   dimensionality or sparsity increases.
 
 For the four configured methods, you should expect model files such as:
 
@@ -126,6 +133,10 @@ You should also expect diagnostic plots such as:
 - ``plots/weight_distributions.png``
 - ``plots/training_throughput.json``
 - ``plots/training_throughput.png``
+
+In practice, those files are written under ``weights/bd_jpsikst_ee/`` and
+``plots/bd_jpsikst_ee/`` because the CLI appends the configured sample name to
+the root output directories.
 
 Because ``shap: true`` is enabled, non-folding methods also produce feature
 importance plots, for example:
@@ -173,7 +184,7 @@ Important note
 ~~~~~~~~~~~~~~
 
 This config requests ``method: XGB``. That means the corresponding ``XGB`` model
-must already exist in ``weights/`` before the command can succeed.
+must already exist in ``weights/bd_jpsikst_ee/`` before the command can succeed.
 
 The default training example above does not train ``XGB``. To make this example
 work, either:
@@ -188,15 +199,15 @@ Expected outputs
 For a successful application run, expect:
 
 - a serialized normalized weight array in
-  ``weights/mcweights_B_DTF_Jpsi_P_B_DTF_Jpsi_PT_nPVs_nLongTracks.pkl``;
+  ``weights/bd_jpsikst_ee/mcweights_B_DTF_Jpsi_P_B_DTF_Jpsi_PT_nPVs_nLongTracks.pkl``;
 - an output ROOT file named ``test_applied_weights.root``;
 - a new branch named ``mult_and_kin_weights_XGB`` in the output tree;
 - comparison plots such as:
 
-  ``plots/mc_vars_reweighting.png``
-  ``plots/mc_other_vars_reweighting.png``
-  ``plots/input_features_reweighted.png``
-  ``plots/other_vars_reweighted.png``
+  ``plots/bd_jpsikst_ee/mc_vars_reweighting.png``
+  ``plots/bd_jpsikst_ee/mc_other_vars_reweighting.png``
+  ``plots/bd_jpsikst_ee/input_features_reweighted.png``
+  ``plots/bd_jpsikst_ee/other_vars_reweighted.png``
 
 The expected behavior is that the output ROOT file keeps the original event
 content and adds the requested weight branch for the rows that survived the

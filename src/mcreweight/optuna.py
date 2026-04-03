@@ -254,10 +254,15 @@ def run_optuna(
                         n_iterations=iter_params["n_iterations"],
                         mixing_learning_rate=iter_params["mixing_learning_rate"],
                         # base MLP knobs
-                        hidden_layer_sizes=nn_params["hidden_layer_sizes"],
-                        alpha=nn_params["alpha"],
-                        learning_rate_init=nn_params["nn_learning_rate_init"],
-                        batch_size=nn_params["batch_size"],
+                        hidden_layer_sizes=nn_params.get(
+                            "hidden_layer_sizes", (64, 32)
+                        ),
+                        alpha=nn_params.get("alpha", 1e-4),
+                        learning_rate_init=nn_params.get(
+                            "nn_learning_rate_init",
+                            nn_params.get("learning_rate_init", 1e-3),
+                        ),
+                        batch_size=nn_params.get("batch_size", 1024),
                     )
 
                 # ---- Fit folding ----

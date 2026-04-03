@@ -10,7 +10,7 @@
 'nPVs': 'Number of PVs'
 'nEcalClusters': 'Number of ECAL clusters'
 'nFTClusters': 'Number of SciFi clusters'
-'nVTClusters': 'Number of Velo clusters'
+'nVPClusters': 'Number of Velo clusters'
 'eCalTot/nEcalClusters': '$\frac{E_{ECAL}}{N_{ECAL}~clusters}$'
 'nHits': 'Number of hits'
 'log(B_CHI2DOF)': '$\log(\chi^{2}/dof(B))$'
