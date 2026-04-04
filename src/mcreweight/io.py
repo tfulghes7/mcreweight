@@ -53,7 +53,9 @@ def extract_variables_from_expression(expr):
     return {tok for tok in tokens if tok not in known_funcs}
 
 
-def load_data(path, tree, columns, weights_col=None, return_mask=False):
+def load_data(
+    path, tree, columns, weights_col=None, weights_tree=None, return_mask=False
+):
     """
     Load data from a ROOT file and return a DataFrame with computed expressions and optional weights.
 
@@ -64,6 +66,9 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
         weights_col (str, optional): Name of the column containing weights, or a
             mathematical expression built from branch names (e.g. ``"w1*w2"``,
             ``"w1/w2"``, ``"log(w1)"``).
+        weights_tree (str, optional): Name of a separate tree to read ``weights_col``
+            from.  When ``None`` (default) ``weights_col`` is read from ``tree``.
+            Both trees must contain the same number of rows.
 
     Returns:
         df (pd.DataFrame): DataFrame with evaluated columns.
@@ -82,7 +87,9 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
             expr_map[col] = col
             needed_vars.add(col)
 
-    if weights_col:
+    # Only add weights variables to the main tree's needed_vars when not using a
+    # separate weights tree; otherwise they will be loaded below independently.
+    if weights_col and not weights_tree:
         if any(op in weights_col for op in "+-*/") or re.search(
             r"\b[a-zA-Z_]\w*\s*\(", weights_col
         ):
@@ -114,7 +121,32 @@ def load_data(path, tree, columns, weights_col=None, return_mask=False):
             )
 
     if weights_col:
-        if any(op in weights_col for op in "+-*/") or re.search(
+        if weights_tree:
+            # Determine which branches are needed from the separate weights tree
+            if any(op in weights_col for op in "+-*/") or re.search(
+                r"\b[a-zA-Z_]\w*\s*\(", weights_col
+            ):
+                w_needed_vars = extract_variables_from_expression(weights_col)
+            else:
+                w_needed_vars = {weights_col}
+            w_dfs = []
+            for p in path:
+                with uproot.open(p) as f:
+                    w_arrays = f[weights_tree].arrays(list(w_needed_vars), library="pd")
+                    w_dfs.append(_to_dataframe(w_arrays))
+            w_df = pd.concat(w_dfs, ignore_index=True)
+            if len(w_df) != len(df):
+                raise ValueError(
+                    f"weights_tree '{weights_tree}' has {len(w_df)} rows but "
+                    f"tree '{tree}' has {len(df)} rows — they must match."
+                )
+            if any(op in weights_col for op in "+-*/") or re.search(
+                r"\b[a-zA-Z_]\w*\s*\(", weights_col
+            ):
+                weights = ne.evaluate(weights_col, local_dict=w_df)
+            else:
+                weights = w_df[weights_col].values
+        elif any(op in weights_col for op in "+-*/") or re.search(
             r"\b[a-zA-Z_]\w*\s*\(", weights_col
         ):
             weights = ne.evaluate(weights_col, local_dict=df)
