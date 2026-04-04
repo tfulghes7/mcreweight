@@ -219,7 +219,7 @@ content and adds the requested weight branch for the rows that survived the
 input loading mask.
 
 Example 3: throughput and memory sweep
--------------------------------------
+--------------------------------------
 
 The benchmarking example uses ``tests_run/throughput_config.yaml`` and is meant
 to exercise all available methods on a small sample while recording both
