@@ -153,12 +153,14 @@ def _load_training_inputs(args):
         tree=args.tree_data,
         columns=columns,
         weights_col=args.sweights_name,
+        weights_tree=getattr(args, "sweights_tree", None),
     )
     mc, mc_weights = load_data(
         path=args.path_mc,
         tree=args.tree_mc,
         columns=columns,
         weights_col=args.mcweights_name,
+        weights_tree=getattr(args, "mcweights_tree", None),
     )
     _log_loaded_samples(args, mc, data, mc_weights, sweights)
     return mc, data, mc_weights, sweights
@@ -410,6 +412,37 @@ def _write_throughput_outputs(args, plotdir, models):
         output_file=f"{plotdir}/training_throughput.png",
     )
 
+    memory_profile = {
+        method: {
+            key: value
+            for key, value in metrics.items()
+            if key.startswith("rss_") or key.startswith("memory_profile_")
+        }
+        for method, metrics in throughput.items()
+    }
+
+    if args.verbosity >= 1:
+        print("[INFO] Training memory summary:")
+        for method, metrics in memory_profile.items():
+            peak_bytes = metrics.get("rss_peak_bytes")
+            delta_bytes = metrics.get("rss_delta_bytes")
+            backend = metrics.get("memory_profile_backend", "unknown")
+            peak_mb = peak_bytes / (1024**2) if peak_bytes is not None else None
+            delta_mb = delta_bytes / (1024**2) if delta_bytes is not None else None
+            peak_text = f"{peak_mb:.1f} MB" if peak_mb is not None else "n/a"
+            delta_text = f"{delta_mb:.1f} MB" if delta_mb is not None else "n/a"
+            print(
+                f"  - {method}: peak_rss={peak_text}, "
+                f"peak_delta={delta_text}, backend={backend}"
+            )
+
+    with open(f"{plotdir}/training_memory.json", "w", encoding="ascii") as f:
+        json.dump(memory_profile, f, indent=2)
+    plt.plot_training_memory(
+        memory_profile=memory_profile,
+        output_file=f"{plotdir}/training_memory.png",
+    )
+
 
 def _sample_for_method(sample, method):
     if method in FOLDING_METHODS:
@@ -594,6 +627,7 @@ def _load_application_inputs(args):
         tree=args.tree_mc,
         columns=vars_list + monitoring_vars_list,
         weights_col=args.mcweights_name,
+        weights_tree=getattr(args, "mcweights_tree", None),
         return_mask=True,
     )
     data = sweights = None
@@ -603,6 +637,7 @@ def _load_application_inputs(args):
             tree=args.tree_data,
             columns=vars_list + monitoring_vars_list,
             weights_col=args.sweights_name,
+            weights_tree=getattr(args, "sweights_tree", None),
         )
     if data is not None:
         _log_loaded_samples(args, mc, data, mc_weights, sweights)

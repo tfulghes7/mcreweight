@@ -19,8 +19,15 @@ def merge_args_with_config(args, cfg):
         # --------------------
         path_mc=cli_or_cfg(args.path_mc, cfg, ["input", "mc", "path"]),
         tree_mc=cli_or_cfg(args.tree_mc, cfg, ["input", "mc", "tree"], "DecayTree"),
-        mcweights_name=cli_or_cfg(
-            args.mcweights_name, cfg, ["input", "mc", "weights_branch"], None
+        mcweights_name=(
+            cli_or_cfg(
+                args.mcweights_name, cfg, ["input", "mc", "mcweights_name"], None
+            )
+            or get_from_cfg(cfg, ["input", "mc", "weights_name"], None)
+            or get_from_cfg(cfg, ["input", "mc", "weights_branch"], None)
+        ),
+        mcweights_tree=cli_or_cfg(
+            args.mcweights_tree, cfg, ["input", "mc", "mcweights_tree"], None
         ),
         # --------------------
         # Input Data
@@ -34,6 +41,9 @@ def merge_args_with_config(args, cfg):
                 args.sweights_name, cfg, ["input", "data", "sweights_name"], None
             )
             or get_from_cfg(cfg, ["input", "data", "sweights_branch"], "sweight_sig")
+        ),
+        sweights_tree=cli_or_cfg(
+            args.sweights_tree, cfg, ["input", "data", "sweights_tree"], None
         ),
         # --------------------
         # Plotting
@@ -139,6 +149,10 @@ def build_parser():
     parser.add_argument(
         "--mcweights-name", help="Name of the MC weights branch (overrides config)"
     )
+    parser.add_argument(
+        "--mcweights-tree",
+        help="Name of a separate MC tree to read the mcweights branch from (overrides config)",
+    )
 
     # Data
     parser.add_argument(
@@ -147,6 +161,10 @@ def build_parser():
     parser.add_argument("--tree-data", help="Name of the data tree (overrides config)")
     parser.add_argument(
         "--sweights-name", help="Name of the data sweights branch (overrides config)"
+    )
+    parser.add_argument(
+        "--sweights-tree",
+        help="Name of a separate data tree to read the sweights branch from (overrides config)",
     )
 
     # Variables

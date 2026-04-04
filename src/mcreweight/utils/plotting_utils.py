@@ -483,6 +483,70 @@ def plot_training_throughput(throughput, output_file):
     plt.close(fig)
 
 
+def plot_training_memory(memory_profile, output_file):
+    """
+    Plot training memory metrics for each method.
+
+    Args:
+        memory_profile (dict): Mapping method -> memory metric dictionary.
+        output_file (str): Output file path.
+    """
+    if not memory_profile:
+        return
+
+    set_lhcb_style()
+
+    items = sorted(
+        memory_profile.items(),
+        key=lambda item: item[1].get("rss_peak_bytes") or 0,
+        reverse=True,
+    )
+    methods = [method for method, _ in items]
+    peak_mb = [(metrics.get("rss_peak_bytes") or 0) / (1024**2) for _, metrics in items]
+    delta_mb = [
+        (metrics.get("rss_delta_bytes") or 0) / (1024**2) for _, metrics in items
+    ]
+
+    y = np.arange(len(methods))
+    height = 0.36
+    fig_height = max(5, 0.9 * len(methods) + 2)
+
+    fig, ax = plt.subplots(figsize=(12, fig_height), constrained_layout=True)
+    ax.barh(
+        y - height / 2,
+        peak_mb,
+        height=height,
+        label="Peak RSS [MB]",
+        alpha=0.85,
+    )
+    ax.barh(
+        y + height / 2,
+        delta_mb,
+        height=height,
+        label="Peak RSS increase [MB]",
+        alpha=0.85,
+    )
+    ax.set_yticks(y)
+    ax.set_yticklabels(methods)
+    ax.invert_yaxis()
+    ax.set_xlabel("Memory [MB]")
+    ax.set_title("Training Memory by Method")
+    ax.legend()
+    ax.grid(True, axis="x", alpha=0.3)
+
+    xmax = max(max(peak_mb, default=0.0), max(delta_mb, default=0.0))
+    if xmax > 0:
+        ax.set_xlim(0, xmax * 1.15)
+
+    for ypos, value in zip(y - height / 2, peak_mb):
+        ax.text(value, ypos, f" {value:.1f}", va="center", ha="left", fontsize=14)
+    for ypos, value in zip(y + height / 2, delta_mb):
+        ax.text(value, ypos, f" {value:.1f}", va="center", ha="left", fontsize=14)
+
+    plt.savefig(output_file, bbox_inches="tight", dpi=300)
+    plt.close(fig)
+
+
 def plot_roc_curve(sample, weights, methods, columns, output_file):
     """
     Plot ROC curve for the different reweighting methods.

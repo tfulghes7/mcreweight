@@ -48,7 +48,7 @@ jobs:
           pixi run -e test pytest tests/test_cli.py::test_run_reweight -v
           pixi run -e test pytest tests/test_cli.py::test_apply_weights -v
 
-  benchmark:
+  throughput_benchmark:
     runs-on: ubuntu-latest
     needs: cli
 
@@ -67,6 +67,24 @@ jobs:
         run: |
           pixi run -e test run-reweight --config tests_run/throughput_config.yaml
           cat plots/ci_throughput_sample/training_throughput.json
+          pixi exec -s python -- python - <<'PY'
+          import json
+          from pathlib import Path
+
+          base = Path('plots/ci_throughput_sample')
+          throughput_path = base / 'training_throughput.json'
+          throughput_png = base / 'training_throughput.png'
+
+          for path in (throughput_path, throughput_png):
+              if not path.exists():
+                  raise SystemExit(f'Missing benchmark artifact: {path}')
+              if path.stat().st_size == 0:
+                  raise SystemExit(f'Empty benchmark artifact: {path}')
+
+          throughput = json.loads(throughput_path.read_text(encoding='ascii'))
+          if not throughput:
+              raise SystemExit('Throughput benchmark did not record any methods.')
+          PY
 
       - name: Upload throughput artifacts
         uses: actions/upload-artifact@v4
@@ -75,6 +93,73 @@ jobs:
           path: |
             plots/ci_throughput_sample/training_throughput.json
             plots/ci_throughput_sample/training_throughput.png
+
+  memory_benchmark:
+    runs-on: ubuntu-latest
+    needs: cli
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+
+      - name: Run memory benchmark
+        run: |
+          pixi run -e test run-reweight --config tests_run/throughput_config.yaml
+          cat plots/ci_throughput_sample/training_memory.json
+          pixi exec -s python -- python - <<'PY'
+          import json
+          from pathlib import Path
+
+          base = Path('plots/ci_throughput_sample')
+          throughput_path = base / 'training_throughput.json'
+          memory_path = base / 'training_memory.json'
+          memory_png = base / 'training_memory.png'
+
+          for path in (throughput_path, memory_path, memory_png):
+              if not path.exists():
+                  raise SystemExit(f'Missing benchmark artifact: {path}')
+              if path.stat().st_size == 0:
+                  raise SystemExit(f'Empty benchmark artifact: {path}')
+
+          throughput = json.loads(throughput_path.read_text(encoding='ascii'))
+          memory = json.loads(memory_path.read_text(encoding='ascii'))
+
+          if not memory:
+              raise SystemExit('Memory benchmark did not record any methods.')
+          if set(memory) != set(throughput):
+              raise SystemExit(
+                  'Memory benchmark methods do not match throughput methods: '
+                  f'{sorted(memory)} vs {sorted(throughput)}'
+              )
+
+          for method, metrics in memory.items():
+              backend = metrics.get('memory_profile_backend')
+              if backend not in {'psutil', 'resource'}:
+                  raise SystemExit(
+                      f"{method}: unexpected memory profiling backend {backend!r}"
+                  )
+              for key in ('rss_peak_bytes', 'rss_delta_bytes'):
+                  value = metrics.get(key)
+                  if value is None:
+                      raise SystemExit(f'{method}: missing {key}')
+                  if value < 0:
+                      raise SystemExit(f'{method}: negative {key}={value}')
+          PY
+
+      - name: Upload memory artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-artifacts
+          path: |
+            plots/ci_throughput_sample/training_memory.json
+            plots/ci_throughput_sample/training_memory.png
 
   docs:
     runs-on: ubuntu-latest

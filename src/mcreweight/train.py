@@ -1,7 +1,10 @@
+import os
+import threading
+import time
+
 from sklearn.model_selection import train_test_split
 import joblib
 import numpy as np
-import time
 from mcreweight.io import flatten_vars
 from mcreweight.models.onnxreweighter import (
     ONNXGBReweighter,
@@ -15,6 +18,16 @@ from mcreweight.models.onnxfolding import (
     ONNXIXGBFoldingReweighter,
 )
 from hep_ml.reweight import GBReweighter, FoldingReweighter
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
+try:
+    import resource
+except ImportError:
+    resource = None
 
 
 def _build_training_metrics(
@@ -39,6 +52,80 @@ def _build_training_metrics(
     }
 
 
+def _get_rss_bytes_psutil(process):
+    return int(process.memory_info().rss)
+
+
+def _get_peak_rss_bytes_resource():
+    if resource is None:
+        return None
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # Linux reports KiB, macOS reports bytes.
+    if peak < 10**9:
+        peak *= 1024
+    return int(peak)
+
+
+def _profile_fit_memory(fit_callable, sample_interval=0.05):
+    if psutil is None:
+        peak_before = _get_peak_rss_bytes_resource()
+        t0 = time.perf_counter()
+        fit_callable()
+        fit_seconds = time.perf_counter() - t0
+        peak_after = _get_peak_rss_bytes_resource()
+        return {
+            "fit_seconds": fit_seconds,
+            "rss_before_bytes": None,
+            "rss_after_bytes": None,
+            "rss_peak_bytes": peak_after,
+            "rss_delta_bytes": (
+                None
+                if peak_before is None or peak_after is None
+                else int(max(peak_after - peak_before, 0))
+            ),
+            "memory_profile_backend": "resource",
+        }
+
+    process = psutil.Process(os.getpid())
+    rss_before = _get_rss_bytes_psutil(process)
+    rss_peak = rss_before
+    stop_event = threading.Event()
+    sample_error = []
+
+    def _sample_memory():
+        nonlocal rss_peak
+        while not stop_event.wait(sample_interval):
+            try:
+                rss_peak = max(rss_peak, _get_rss_bytes_psutil(process))
+            except Exception as exc:
+                sample_error.append(exc)
+                return
+
+    sampler = threading.Thread(target=_sample_memory, daemon=True)
+    sampler.start()
+    t0 = time.perf_counter()
+    try:
+        fit_callable()
+    finally:
+        fit_seconds = time.perf_counter() - t0
+        stop_event.set()
+        sampler.join()
+
+    rss_after = _get_rss_bytes_psutil(process)
+    rss_peak = max(rss_peak, rss_after)
+    profile = {
+        "fit_seconds": fit_seconds,
+        "rss_before_bytes": int(rss_before),
+        "rss_after_bytes": int(rss_after),
+        "rss_peak_bytes": int(rss_peak),
+        "rss_delta_bytes": int(max(rss_peak - rss_before, 0)),
+        "memory_profile_backend": "psutil",
+    }
+    if sample_error:
+        profile["memory_profile_warning"] = repr(sample_error[0])
+    return profile
+
+
 def _attach_training_metrics(model, **metrics):
     model.training_metrics_ = metrics
     return model
@@ -57,9 +144,8 @@ def _fit_with_metrics(
     stage_repetitions=1,
     outer_repetitions=1,
 ):
-    t0 = time.perf_counter()
-    fit_callable()
-    fit_seconds = time.perf_counter() - t0
+    memory_profile = _profile_fit_memory(fit_callable)
+    fit_seconds = memory_profile.pop("fit_seconds")
     _attach_training_metrics(
         model,
         **_build_training_metrics(
@@ -70,6 +156,7 @@ def _fit_with_metrics(
             stage_repetitions=stage_repetitions,
             outer_repetitions=outer_repetitions,
         ),
+        **memory_profile,
     )
     return model
 

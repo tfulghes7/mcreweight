@@ -29,8 +29,15 @@ def merge_args_with_config(args, cfg):
         # --------------------
         path_mc=cli_or_cfg(args.path_mc, cfg, ["input", "mc", "path"]),
         tree_mc=cli_or_cfg(args.tree_mc, cfg, ["input", "mc", "tree"], "DecayTree"),
-        mcweights_name=cli_or_cfg(
-            args.mcweights_name, cfg, ["input", "mc", "weights_name"], None
+        mcweights_name=(
+            cli_or_cfg(
+                args.mcweights_name, cfg, ["input", "mc", "mcweights_name"], None
+            )
+            or get_from_cfg(cfg, ["input", "mc", "weights_name"], None)
+            or get_from_cfg(cfg, ["input", "mc", "weights_branch"], None)
+        ),
+        mcweights_tree=cli_or_cfg(
+            args.mcweights_tree, cfg, ["input", "mc", "mcweights_tree"], None
         ),
         mc_label=cli_or_cfg(args.mc_label, cfg, ["input", "mc", "label"], "MC"),
         # --------------------
@@ -40,8 +47,14 @@ def merge_args_with_config(args, cfg):
         tree_data=cli_or_cfg(
             args.tree_data, cfg, ["input", "data", "tree"], "DecayTree"
         ),
-        sweights_name=cli_or_cfg(
-            args.sweights_name, cfg, ["input", "data", "sweights_name"], "sweight_sig"
+        sweights_name=(
+            cli_or_cfg(
+                args.sweights_name, cfg, ["input", "data", "sweights_name"], None
+            )
+            or get_from_cfg(cfg, ["input", "data", "sweights_branch"], "sweight_sig")
+        ),
+        sweights_tree=cli_or_cfg(
+            args.sweights_tree, cfg, ["input", "data", "sweights_tree"], None
         ),
         data_label=cli_or_cfg(args.data_label, cfg, ["input", "data", "label"], "Data"),
         # --------------------
@@ -147,6 +160,10 @@ def build_parser():
         "--mcweights-name", help="Name of the MC weights branch (overrides YAML config)"
     )
     parser.add_argument(
+        "--mcweights-tree",
+        help="Name of a separate MC tree to read the mcweights branch from (overrides YAML config)",
+    )
+    parser.add_argument(
         "--mc-label", help="Label for the MC sample (overrides YAML config)"
     )
 
@@ -162,6 +179,10 @@ def build_parser():
     parser.add_argument(
         "--sweights-name",
         help="Name of the signal weights branch (overrides YAML config)",
+    )
+    parser.add_argument(
+        "--sweights-tree",
+        help="Name of a separate data tree to read the sweights branch from (overrides YAML config)",
     )
     parser.add_argument(
         "--data-label", help="Label for the Data sample (overrides YAML config)"
