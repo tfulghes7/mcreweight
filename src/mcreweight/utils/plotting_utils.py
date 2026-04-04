@@ -432,34 +432,23 @@ def plot_training_throughput(throughput, output_file):
 
     items = sorted(
         throughput.items(),
-        key=lambda item: item[1].get("effective_events_per_second", 0.0),
+        key=lambda item: item[1].get("dataset_events_per_second", 0.0),
         reverse=True,
     )
     methods = [method for method, _ in items]
     dataset_rates = [
         metrics.get("dataset_events_per_second", 0.0) for _, metrics in items
     ]
-    effective_rates = [
-        metrics.get("effective_events_per_second", 0.0) for _, metrics in items
-    ]
 
     y = np.arange(len(methods))
-    height = 0.36
     fig_height = max(5, 0.9 * len(methods) + 2)
 
     fig, ax = plt.subplots(figsize=(12, fig_height), constrained_layout=True)
     ax.barh(
-        y - height / 2,
+        y,
         dataset_rates,
-        height=height,
+        height=0.6,
         label="Dataset events/s",
-        alpha=0.85,
-    )
-    ax.barh(
-        y + height / 2,
-        effective_rates,
-        height=height,
-        label="Effective events/s",
         alpha=0.85,
     )
     ax.set_yticks(y)
@@ -470,13 +459,11 @@ def plot_training_throughput(throughput, output_file):
     ax.legend()
     ax.grid(True, axis="x", alpha=0.3)
 
-    xmax = max(max(dataset_rates, default=0.0), max(effective_rates, default=0.0))
+    xmax = max(dataset_rates, default=0.0)
     if xmax > 0:
         ax.set_xlim(0, xmax * 1.15)
 
-    for ypos, rate in zip(y - height / 2, dataset_rates):
-        ax.text(rate, ypos, f" {rate:.1f}", va="center", ha="left", fontsize=14)
-    for ypos, rate in zip(y + height / 2, effective_rates):
+    for ypos, rate in zip(y, dataset_rates):
         ax.text(rate, ypos, f" {rate:.1f}", va="center", ha="left", fontsize=14)
 
     plt.savefig(output_file, bbox_inches="tight", dpi=300)
@@ -503,27 +490,16 @@ def plot_training_memory(memory_profile, output_file):
     )
     methods = [method for method, _ in items]
     peak_mb = [(metrics.get("rss_peak_bytes") or 0) / (1024**2) for _, metrics in items]
-    delta_mb = [
-        (metrics.get("rss_delta_bytes") or 0) / (1024**2) for _, metrics in items
-    ]
 
     y = np.arange(len(methods))
-    height = 0.36
     fig_height = max(5, 0.9 * len(methods) + 2)
 
     fig, ax = plt.subplots(figsize=(12, fig_height), constrained_layout=True)
     ax.barh(
-        y - height / 2,
+        y,
         peak_mb,
-        height=height,
+        height=0.6,
         label="Peak RSS [MB]",
-        alpha=0.85,
-    )
-    ax.barh(
-        y + height / 2,
-        delta_mb,
-        height=height,
-        label="Peak RSS increase [MB]",
         alpha=0.85,
     )
     ax.set_yticks(y)
@@ -534,13 +510,11 @@ def plot_training_memory(memory_profile, output_file):
     ax.legend()
     ax.grid(True, axis="x", alpha=0.3)
 
-    xmax = max(max(peak_mb, default=0.0), max(delta_mb, default=0.0))
+    xmax = max(peak_mb, default=0.0)
     if xmax > 0:
         ax.set_xlim(0, xmax * 1.15)
 
-    for ypos, value in zip(y - height / 2, peak_mb):
-        ax.text(value, ypos, f" {value:.1f}", va="center", ha="left", fontsize=14)
-    for ypos, value in zip(y + height / 2, delta_mb):
+    for ypos, value in zip(y, peak_mb):
         ax.text(value, ypos, f" {value:.1f}", va="center", ha="left", fontsize=14)
 
     plt.savefig(output_file, bbox_inches="tight", dpi=300)

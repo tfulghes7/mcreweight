@@ -133,6 +133,8 @@ You should also expect diagnostic plots such as:
 - ``plots/weight_distributions.png``
 - ``plots/training_throughput.json``
 - ``plots/training_throughput.png``
+- ``plots/training_memory.json``
+- ``plots/training_memory.png``
 
 In practice, those files are written under ``weights/bd_jpsikst_ee/`` and
 ``plots/bd_jpsikst_ee/`` because the CLI appends the configured sample name to
@@ -156,7 +158,10 @@ A successful run should:
 - train all requested methods;
 - serialize models and weight arrays under ``weights/``;
 - create a non-empty set of PNG plots under ``plots/``;
-- write ``plots/training_throughput.json`` summarizing fit timing.
+- write ``plots/training_throughput.json`` summarizing fit timing and event
+  rates;
+- write ``plots/training_memory.json`` summarizing peak resident memory usage
+  during each fit.
 
 The exact numerical weights are not fixed, especially for methods with
 classifier training or Optuna tuning, but the general expectation is that the
@@ -213,11 +218,12 @@ The expected behavior is that the output ROOT file keeps the original event
 content and adds the requested weight branch for the rows that survived the
 input loading mask.
 
-Example 3: throughput sweep
----------------------------
+Example 3: throughput and memory sweep
+-------------------------------------
 
-The throughput example uses ``tests_run/throughput_config.yaml`` and is meant to
-exercise all available methods on a small sample.
+The benchmarking example uses ``tests_run/throughput_config.yaml`` and is meant
+to exercise all available methods on a small sample while recording both
+training speed and memory usage.
 
 Run it with:
 
@@ -243,10 +249,56 @@ This run should produce:
   summaries;
 - ``plots/training_throughput.png`` with a visual summary of relative training
   speed;
+- ``plots/training_memory.json`` containing per-method peak RSS summaries;
+- ``plots/training_memory.png`` with a visual summary of relative memory
+  consumption;
 - the usual validation plots comparing the different methods.
 
 This is the best example to use when you want to compare backends side by side
 or verify that the full method registry is still working.
+
+What is measured
+~~~~~~~~~~~~~~~~
+
+The throughput summary reports:
+
+- fit wall-clock time for each method;
+- dataset events per second, defined as the number of training events processed
+  per fit second.
+
+The memory summary reports:
+
+- peak RSS (resident set size) reached by the process while fitting each
+  method.
+
+Peak RSS is the highest amount of physical memory occupied by the process during
+the fit. It is the most useful metric when comparing methods for CI stability
+or for estimating whether a given workflow will fit in RAM on a target machine.
+
+Practical ways to reduce runtime and memory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a run is too slow or too heavy for the available machine, the most useful
+config changes are usually:
+
+- reduce the number of requested ``methods`` and compare backends in separate
+  runs instead of training everything at once;
+- disable ``shap`` unless feature-importance plots are specifically needed;
+- lower ``n_trials`` when using Optuna, since each trial performs an additional
+  full training pass;
+- avoid folding methods, or lower ``n_folds``, because folding trains multiple
+  reweighters per method;
+- reduce the number of ``training_vars`` and especially ``monitoring_vars``, as
+  all requested columns are loaded into memory and several diagnostics scale
+  with the feature count;
+- for the ``Bins`` method, reduce ``n_bins`` or the number of input features,
+  since the histogram size grows quickly with dimensionality;
+- use smaller benchmark-style configs first to compare methods, then rerun only
+  the most promising ones on the full sample.
+
+In practice, the easiest low-cost speedup is often to start with a single
+method such as ``GB`` or ``XGB``, set ``shap: false``, and keep ``n_trials`` at
+``0`` or ``1`` until the rest of the workflow is validated.
 
 Reading the outputs
 -------------------
@@ -262,7 +314,8 @@ The most useful files to inspect after running the examples are:
 - ``plots/weight_distributions.png`` to check whether the learned weights are
   numerically well behaved;
 - ``plots/training_throughput.json`` to compare computational cost across
-  methods.
+  methods;
+- ``plots/training_memory.json`` to compare peak memory usage across methods.
 
 In short, the expected qualitative outcome is not a specific number but a set of
 artifacts showing that:

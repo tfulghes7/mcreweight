@@ -74,6 +74,8 @@ Plotting utilities
 
 .. autofunction:: mcreweight.utils.plotting_utils.plot_training_throughput
 
+.. autofunction:: mcreweight.utils.plotting_utils.plot_training_memory
+
 .. autofunction:: mcreweight.utils.plotting_utils.plot_roc_curve
 
 .. autofunction:: mcreweight.utils.plotting_utils.plot_classifier_output

@@ -36,7 +36,6 @@ def _build_training_metrics(
     dataset_events = int(n_original + n_target)
     stage_repetitions = max(int(stage_repetitions), 1)
     outer_repetitions = max(int(outer_repetitions), 1)
-    effective_events = int(dataset_events * stage_repetitions * outer_repetitions)
     fit_seconds = float(max(fit_seconds, 1e-12))
     return {
         "method": method,
@@ -45,10 +44,8 @@ def _build_training_metrics(
         "dataset_events": dataset_events,
         "stage_repetitions": stage_repetitions,
         "outer_repetitions": outer_repetitions,
-        "effective_events": effective_events,
         "fit_seconds": fit_seconds,
         "dataset_events_per_second": float(dataset_events / fit_seconds),
-        "effective_events_per_second": float(effective_events / fit_seconds),
     }
 
 

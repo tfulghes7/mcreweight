@@ -400,9 +400,7 @@ def _write_throughput_outputs(args, plotdir, models):
                 f"  - {method}: "
                 f"fit={metrics['fit_seconds']:.3f}s, "
                 f"dataset_events={metrics['dataset_events']}, "
-                f"effective_events={metrics['effective_events']}, "
-                f"dataset_rate={metrics['dataset_events_per_second']:.1f} ev/s, "
-                f"effective_rate={metrics['effective_events_per_second']:.1f} ev/s"
+                f"dataset_rate={metrics['dataset_events_per_second']:.1f} ev/s"
             )
 
     with open(f"{plotdir}/training_throughput.json", "w", encoding="ascii") as f:
@@ -425,16 +423,10 @@ def _write_throughput_outputs(args, plotdir, models):
         print("[INFO] Training memory summary:")
         for method, metrics in memory_profile.items():
             peak_bytes = metrics.get("rss_peak_bytes")
-            delta_bytes = metrics.get("rss_delta_bytes")
             backend = metrics.get("memory_profile_backend", "unknown")
             peak_mb = peak_bytes / (1024**2) if peak_bytes is not None else None
-            delta_mb = delta_bytes / (1024**2) if delta_bytes is not None else None
             peak_text = f"{peak_mb:.1f} MB" if peak_mb is not None else "n/a"
-            delta_text = f"{delta_mb:.1f} MB" if delta_mb is not None else "n/a"
-            print(
-                f"  - {method}: peak_rss={peak_text}, "
-                f"peak_delta={delta_text}, backend={backend}"
-            )
+            print(f"  - {method}: peak_rss={peak_text}, backend={backend}")
 
     with open(f"{plotdir}/training_memory.json", "w", encoding="ascii") as f:
         json.dump(memory_profile, f, indent=2)
