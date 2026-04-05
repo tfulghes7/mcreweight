@@ -35,6 +35,19 @@ METHOD_COLORS = {
 def _label_for(x_labels, feature_name):
     return x_labels.get(feature_name, feature_name)
 
+def _hide_unused_grouped_axes(axes, n_plots, n_cols):
+    """Hide only subplot cells not occupied by grouped variable panels."""
+    used_positions = set()
+    for idx in range(n_plots):
+        row = (idx // n_cols) * 3
+        col = idx % n_cols
+        used_positions.update({(row, col), (row + 1, col), (row + 2, col)})
+
+    for row in range(axes.shape[0]):
+        for col in range(axes.shape[1]):
+            if (row, col) not in used_positions:
+                axes[row, col].axis("off")
+
 
 def set_lhcb_style(grid=True, size=10, usetex=False):
     """
@@ -315,9 +328,7 @@ def plot_distributions(
         axes[row + 2, col].axis("off")
 
     # Hide unused axes
-    used_axes = len(columns) * 3
-    for i in range(used_axes, axes.size):
-        axes.flat[i].axis("off")
+    _hide_unused_grouped_axes(axes, len(columns), n_cols)
 
     fig.subplots_adjust(
         left=0.10,
