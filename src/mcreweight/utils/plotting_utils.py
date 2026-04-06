@@ -1,18 +1,20 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+import itertools
 import math
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import shap
+from matplotlib.colors import TwoSlopeNorm
+from scipy.stats import binned_statistic_2d
+
+from .utils import fit_transform, apply_transform
 from mcreweight.utils.utils import (
     evaluate_reweighting,
+    get_scores,
     weighted_corr_matrix,
     weighted_ks_statistic,
-    get_scores,
 )
-import seaborn as sns
-import itertools
-import shap
-from scipy.stats import binned_statistic_2d
-from .utils import fit_transform, apply_transform
 
 
 MC_COLOR = "#c62828"
@@ -35,6 +37,7 @@ METHOD_COLORS = {
 def _label_for(x_labels, feature_name):
     return x_labels.get(feature_name, feature_name)
 
+
 def _hide_unused_grouped_axes(axes, n_plots, n_cols):
     """Hide only subplot cells not occupied by grouped variable panels."""
     used_positions = set()
@@ -47,6 +50,20 @@ def _hide_unused_grouped_axes(axes, n_plots, n_cols):
         for col in range(axes.shape[1]):
             if (row, col) not in used_positions:
                 axes[row, col].axis("off")
+
+
+def _subplot_column_count(n_plots):
+    """Choose a compact, readable subplot grid width."""
+    if n_plots == 4:
+        return 2
+    if n_plots >= 10:
+        return 5
+    return min(3, n_plots)
+
+
+def _reshape_axes_grid(axes, n_rows, n_cols):
+    """Return subplot axes as a consistent 2D ndarray."""
+    return np.atleast_2d(np.array(axes, dtype=object)).reshape(n_rows, n_cols)
 
 
 def set_lhcb_style(grid=True, size=10, usetex=False):
@@ -79,7 +96,6 @@ def set_lhcb_style(grid=True, size=10, usetex=False):
     plt.rcParams["ytick.right"] = True
 
 
-hist_settings = {"bins": 50, "density": True, "alpha": 0.7}
 plt.rcParams.update(
     {
         "axes.titlesize": 22,
@@ -183,9 +199,7 @@ def plot_distributions(
         print(f"[INFO] MC size: {len(mc)}, Data size: {len(data)}")
 
     n_plots = len(columns)
-    n_cols = min(3, n_plots) if n_plots != 4 else 2
-    if n_plots >= 10:
-        n_cols = 5
+    n_cols = _subplot_column_count(n_plots)
     n_rows = math.ceil(n_plots / n_cols)
     grid_rows = n_rows * 3
 
@@ -196,11 +210,7 @@ def plot_distributions(
         gridspec_kw={"height_ratios": [3.0, 1.0, 0.55] * n_rows},
         constrained_layout=False,
     )
-    axes = (
-        np.array(axes).reshape(grid_rows, n_cols)
-        if n_rows * n_cols > 1
-        else np.array([[axes[0]], [axes[1]], [axes[2]]])
-    )
+    axes = _reshape_axes_grid(axes, grid_rows, n_cols)
 
     if transform is not None:
         # build matrices for transform
@@ -366,16 +376,13 @@ def plot_mc_distributions(
     """
     set_lhcb_style()
     hist_settings = dict(bins=50, histtype="step", linewidth=1.5)
-    n_cols = 3 if len(columns) != 4 else 2
-    if len(columns) >= 10:
-        n_cols = 5
+    n_cols = _subplot_column_count(len(columns))
     n_rows = math.ceil(len(columns) / n_cols)
 
     fig, axes = plt.subplots(
         n_rows, n_cols, figsize=(8 * n_cols, 5 * n_rows), constrained_layout=True
     )
-    if isinstance(axes, np.ndarray):
-        axes = axes.reshape(n_rows, n_cols)
+    axes = _reshape_axes_grid(axes, n_rows, n_cols)
 
     for idx, column in enumerate(columns):
         row = idx // n_cols
@@ -699,10 +706,7 @@ def plot_2d_score_maps(
     var_pairs = list(itertools.combinations(vars, 2))
     n_plots = len(var_pairs)
 
-    if len(vars) <= 4 and len(vars) != 3:
-        n_cols = 2
-    else:
-        n_cols = 3
+    n_cols = 2 if len(vars) <= 4 and len(vars) != 3 else 3
 
     n_rows = math.ceil(n_plots / n_cols)
 
@@ -847,10 +851,7 @@ def plot_2d_pull_maps(
     var_pairs = list(itertools.combinations(columns, 2))
     n_plots = len(var_pairs)
 
-    if len(columns) <= 4 and len(columns) != 3:
-        n_cols = 2
-    else:
-        n_cols = 3
+    n_cols = 2 if len(columns) <= 4 and len(columns) != 3 else 3
 
     n_rows = math.ceil(n_plots / n_cols)
 
