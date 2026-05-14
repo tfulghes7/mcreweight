@@ -108,6 +108,10 @@ def merge_args_with_config(args, cfg):
         reweight_metric_every=cli_or_cfg(
             args.reweight_metric_every, cfg, ["reweighting", "reweight_metric_every"], 1
         ),
+        clip_weights=(
+            args.clip_weights
+            or get_from_cfg(cfg, ["reweighting", "clip_weights"], True)
+        ),
         folding_aggregation=cli_or_cfg(
             args.folding_aggregation,
             cfg,
@@ -256,6 +260,17 @@ def build_parser():
         dest="reweight_metric_every",
         type=int,
         help="Evaluate the iterative ONNX validation metric every N stages (overrides YAML config)",
+    )
+    parser.add_argument(
+        "--clip-weights",
+        action="store_true",
+        help="When enabled, clip extreme predicted weights for GB, ONNXGB, Bins, GBFolding and ONNXGBFolding (overrides YAML config)",
+    )
+    parser.add_argument(
+        "--clip-weight",
+        dest="clip_weights",
+        action="store_true",
+        help="Alias for --clip-weights",
     )
     parser.add_argument(
         "--folding-aggregation",

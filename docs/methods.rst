@@ -447,7 +447,8 @@ Seed trials
 Before optimization starts, one manually chosen initial trial is enqueued:
 
 ``GB``
-  ``gb_n_estimators=100``, ``gb_learning_rate=0.1``, ``gb_max_depth=5``
+  ``gb_n_estimators=100``, ``gb_learning_rate=0.1``, ``gb_max_depth=5``,
+  ``min_samples_leaf=200``, ``subsample=1.0``
 
 ``ONNXGB``
   ``gb_n_estimators=100``, ``gb_learning_rate=0.1``, ``gb_max_depth=4``,
@@ -480,6 +481,8 @@ Shared iterative parameters for ``XGB`` and ``NN``
 - ``gb_n_estimators``: integer in ``[50, 150]`` with step ``10``
 - ``gb_learning_rate``: log-uniform float in ``[0.05, 0.3]``
 - ``gb_max_depth``: integer in ``[3, 8]`` with step ``1``
+- ``min_samples_leaf``: integer in ``[200, 1200]`` with step ``200``
+- ``subsample``: float in ``[0.3, 1.0]`` with step ``0.1``
 
 ``ONNXGB`` search space
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -487,9 +490,9 @@ Shared iterative parameters for ``XGB`` and ``NN``
 - ``gb_n_estimators``: integer in ``[50, 150]`` with step ``10``
 - ``gb_learning_rate``: log-uniform float in ``[0.05, 0.3]``
 - ``gb_max_depth``: integer in ``[3, 8]`` with step ``1``
-- ``min_samples_leaf``: integer in ``[50, 500]`` with step ``50``
+- ``min_samples_leaf``: integer in ``[200, 1200]`` with step ``200``
 - ``loss_regularization``: log-uniform float in ``[1.0, 20.0]``
-- ``subsample``: float in ``[0.5, 1.0]`` with step ``0.1``
+- ``subsample``: float in ``[0.3, 1.0]`` with step ``0.1``
 
 ``XGB`` base-estimator search space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

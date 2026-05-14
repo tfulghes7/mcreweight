@@ -121,6 +121,8 @@ def run_optuna(
             n_estimators=trial.suggest_int("gb_n_estimators", 50, 150, step=10),
             learning_rate=trial.suggest_float("gb_learning_rate", 0.05, 0.3, log=True),
             max_depth=trial.suggest_int("gb_max_depth", 3, 8, step=1),
+            min_samples_leaf=trial.suggest_int("min_samples_leaf", 200, 1200, step=200),
+            subsample=trial.suggest_float("subsample", 0.3, 1.0, step=0.1),
         )
 
     def suggest_onnxgb_params(trial):
@@ -134,11 +136,11 @@ def run_optuna(
             n_estimators=trial.suggest_int("gb_n_estimators", 50, 150, step=10),
             learning_rate=trial.suggest_float("gb_learning_rate", 0.05, 0.3, log=True),
             max_depth=trial.suggest_int("gb_max_depth", 3, 8, step=1),
-            min_samples_leaf=trial.suggest_int("min_samples_leaf", 50, 500, step=50),
+            min_samples_leaf=trial.suggest_int("min_samples_leaf", 200, 1200, step=200),
             loss_regularization=trial.suggest_float(
                 "loss_regularization", 1.0, 20.0, log=True
             ),
-            subsample=trial.suggest_float("subsample", 0.5, 1.0, step=0.1),
+            subsample=trial.suggest_float("subsample", 0.3, 1.0, step=0.1),
         )
 
     def suggest_xgb_params(trial):
@@ -184,6 +186,8 @@ def run_optuna(
                     n_estimators=gb_params["n_estimators"],
                     learning_rate=gb_params["learning_rate"],
                     max_depth=gb_params["max_depth"],
+                    min_samples_leaf=gb_params["min_samples_leaf"],
+                    gb_args={"subsample": gb_params["subsample"]},
                 )
                 classifier.fit(
                     mc[columns].to_numpy(),
@@ -306,6 +310,8 @@ def run_optuna(
             gb_n_estimators=100,
             gb_learning_rate=0.1,
             gb_max_depth=5,
+            min_samples_leaf=200,
+            subsample=1.0,
         )
     elif classifier_type == "ONNXGB":
         initial_params = dict(

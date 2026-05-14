@@ -176,6 +176,12 @@ def _clip_predicted_weights(args, weights):
     return np.clip(weights, 0, np.percentile(weights, 99))
 
 
+def _maybe_clip_predicted_weights(args, weights):
+    if getattr(args, "clip_weights", False):
+        return _clip_predicted_weights(args, weights)
+    return weights
+
+
 def _predict_test_weights(model, sample, columns, use_onnx_api):
     X_mc_test = sample["mc_test"][columns]
     if use_onnx_api:
@@ -250,6 +256,8 @@ def gbreweight(args, sample, columns, study, weightsdir):
         n_estimators=best.get("gb_n_estimators", best.get("n_estimators", 100)),
         learning_rate=best.get("gb_learning_rate", best.get("learning_rate", 0.1)),
         max_depth=best.get("gb_max_depth", best.get("max_depth", 4)),
+        min_samples_leaf=best.get("min_samples_leaf", 200),
+        gb_args={"subsample": best.get("subsample", 1.0)},
     )
 
     print(f"Training GBReweighter with columns: {columns}")
@@ -268,7 +276,7 @@ def gbreweight(args, sample, columns, study, weightsdir):
         stage_repetitions=gbr.n_estimators,
     )
     gbr = _persist_joblib(gbr, f"{weightsdir}/gbr_model_{tag}")
-    new_mc_weights = _clip_predicted_weights(
+    new_mc_weights = _maybe_clip_predicted_weights(
         args, _predict_test_weights(gbr, sample, columns, use_onnx_api=False)
     )
     _dump_weights(weightsdir, "gbr_weights", tag, new_mc_weights)
@@ -382,7 +390,7 @@ def onnxgbreweight(args, sample, columns, weightsdir, study=None):
     )
 
     onnxgb = _persist_onnx(onnxgb, f"{weightsdir}/onnxgb_model_{tag}")
-    new_mc_weights = _clip_predicted_weights(
+    new_mc_weights = _maybe_clip_predicted_weights(
         args, _predict_test_weights(onnxgb, sample, columns, use_onnx_api=True)
     )
     _dump_weights(weightsdir, "onnxgb_weights", tag, new_mc_weights)
@@ -491,7 +499,7 @@ def gbfolding(args, gb, sample, columns, n_folds, weightsdir):
 
     tag = _tag(columns)
     folding = _persist_joblib(folding, f"{weightsdir}/folding_model_{tag}")
-    new_mc_weights = _clip_predicted_weights(
+    new_mc_weights = _maybe_clip_predicted_weights(
         args, _predict_full_weights(folding, sample, columns, use_onnx_api=False)
     )
     _dump_weights(weightsdir, "folding_weights", tag, new_mc_weights)
@@ -580,7 +588,7 @@ def onnxfolding(args, onnxgb, sample, columns, n_folds, weightsdir):
 
     tag = _tag(columns)
     folding = _persist_onnx(folding, f"{weightsdir}/onnxfolding_model_{tag}")
-    new_mc_weights = _clip_predicted_weights(
+    new_mc_weights = _maybe_clip_predicted_weights(
         args,
         _predict_full_weights(
             folding, sample, columns, use_onnx_api=True, out_of_fold=True
@@ -678,7 +686,7 @@ def binning_reweight(args, sample, columns, n_bins, n_neighs, weightsdir):
     )
 
     bins = _persist_onnx(bins, f"{weightsdir}/binning_model_{tag}")
-    new_mc_weights = _clip_predicted_weights(
+    new_mc_weights = _maybe_clip_predicted_weights(
         args, _predict_test_weights(bins, sample, columns, use_onnx_api=True)
     )
     _dump_weights(weightsdir, "onnx_binning_weights", tag, new_mc_weights)

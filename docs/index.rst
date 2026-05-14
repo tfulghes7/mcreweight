@@ -9,5 +9,6 @@ objectives differ.
    :caption: Contents
 
    methods
+   configuration
    api
    examples
