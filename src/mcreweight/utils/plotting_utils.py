@@ -69,42 +69,46 @@ def _reshape_axes_grid(axes, n_rows, n_cols):
 def set_lhcb_style(grid=True, size=10, usetex=False):
     """
     Set matplotlib plotting style close to "official" LHCb style
-    (serif fonts, tick sizes and location, etc.)
+    (serif fonts, inward ticks on all sides, minor ticks, light grid).
     """
     plt.rc("font", family="serif", size=size)
     plt.rc("text", usetex=usetex)
-    plt.rcParams["figure.max_open_warning"] = 40
-    plt.rcParams["axes.linewidth"] = 1.3
-    plt.rcParams["axes.grid"] = grid
-    plt.rcParams["grid.alpha"] = 0.3
-    plt.rcParams["axes.axisbelow"] = False
-    plt.rcParams["xtick.major.width"] = 1
-    plt.rcParams["ytick.major.width"] = 1
-    plt.rcParams["xtick.minor.width"] = 1
-    plt.rcParams["ytick.minor.width"] = 1
-    plt.rcParams["xtick.major.size"] = 6
-    plt.rcParams["ytick.major.size"] = 6
-    plt.rcParams["xtick.minor.size"] = 3
-    plt.rcParams["ytick.minor.size"] = 3
-    plt.rcParams["xtick.direction"] = "in"
-    plt.rcParams["ytick.direction"] = "in"
-    plt.rcParams["xtick.minor.visible"] = True
-    plt.rcParams["ytick.minor.visible"] = True
-    plt.rcParams["xtick.bottom"] = True
-    plt.rcParams["xtick.top"] = True
-    plt.rcParams["ytick.left"] = True
-    plt.rcParams["ytick.right"] = True
+    plt.rcParams.update(
+        {
+            "figure.max_open_warning": 40,
+            "axes.linewidth": 1.3,
+            "axes.grid": grid,
+            "grid.alpha": 0.3,
+            "axes.axisbelow": False,
+            "xtick.major.width": 1,
+            "ytick.major.width": 1,
+            "xtick.minor.width": 1,
+            "ytick.minor.width": 1,
+            "xtick.major.size": 6,
+            "ytick.major.size": 6,
+            "xtick.minor.size": 3,
+            "ytick.minor.size": 3,
+            "xtick.direction": "in",
+            "ytick.direction": "in",
+            "xtick.minor.visible": True,
+            "ytick.minor.visible": True,
+            "xtick.bottom": True,
+            "xtick.top": True,
+            "ytick.left": True,
+            "ytick.right": True,
+            "axes.titlesize": 22,
+            "axes.labelsize": 22,
+            "xtick.labelsize": 20,
+            "ytick.labelsize": 20,
+            "legend.fontsize": 20,
+        }
+    )
 
 
-plt.rcParams.update(
-    {
-        "axes.titlesize": 22,
-        "axes.labelsize": 22,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
-        "legend.fontsize": 20,
-    }
-)
+try:
+    set_lhcb_style()
+except Exception:
+    pass
 
 
 def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_file):
@@ -337,7 +341,6 @@ def plot_distributions(
         # Spacer row between grouped panels
         axes[row + 2, col].axis("off")
 
-    # Hide unused axes
     _hide_unused_grouped_axes(axes, len(columns), n_cols)
 
     fig.subplots_adjust(
@@ -678,7 +681,6 @@ def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):
     if xlim:
         plt.xlim(xlim)
     plt.yscale("log")  # Helps visualize long tails
-    plt.grid(True, which="both", linestyle="--", alpha=0.5)
     plt.tight_layout()
     plt.savefig(output_file)
     print(f"[INFO] Weight distributions plot saved to: {output_file}")
