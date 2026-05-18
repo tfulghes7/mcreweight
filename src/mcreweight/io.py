@@ -38,6 +38,13 @@ def get_from_cfg(cfg, keys, default=None):
     return out
 
 
+def parse_none(v):
+    """Convert the string "none" (case-insensitive) to Python None."""
+    if isinstance(v, str) and v.lower() == "none":
+        return None
+    return v
+
+
 def extract_variables_from_expression(expr):
     """
     Extract variable names from a mathematical expression string.

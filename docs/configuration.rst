@@ -110,7 +110,8 @@ Key descriptions
      - Name of the TTree inside each data file.  Default: ``DecayTree``.
    * - ``input.data.sweights_name``
      - Branch name for per-event sWeights (or any data-side weight).  Accepts
-       plain names or expressions.  Default: ``sweight_sig``.
+       plain names or expressions.  Default: ``sweight_sig``.  Set to ``none``
+       to disable sWeights and use uniform data weights instead.
    * - ``input.data.sweights_tree``
      - Separate TTree from which ``sweights_name`` is read.  ``null`` reads
        from ``input.data.tree``.
@@ -209,7 +210,8 @@ line.
    Data input
      --path-data PATH [PATH …]   Path(s) to data ROOT file(s)
      --tree-data TREE            Data TTree name
-     --sweights-name BRANCH      Data sWeights branch or expression
+     --sweights-name BRANCH      Data sWeights branch or expression; pass
+                                 ``none`` to use uniform data weights
      --sweights-tree TREE        Separate tree for sWeights
      --data-label LABEL          Data label for plots
 
@@ -321,7 +323,8 @@ Key descriptions
    * - ``input.data.tree``
      - Data TTree name.  Default: ``DecayTree``.
    * - ``input.data.sweights_name``
-     - Data sWeights branch or expression.  Default: ``sweight_sig``.
+     - Data sWeights branch or expression.  Default: ``sweight_sig``.  Set to
+       ``none`` to disable sWeights and use uniform data weights instead.
    * - ``input.data.sweights_tree``
      - Separate TTree for ``sweights_name``.  ``null`` → same as ``input.data.tree``.
    * - ``input.path_xlabels``
@@ -384,7 +387,8 @@ CLI reference
    Data input (optional; enables comparison plots)
      --path-data PATH [PATH …]   Path(s) to data ROOT file(s)
      --tree-data TREE            Data TTree name
-     --sweights-name BRANCH      Data sWeights branch or expression
+     --sweights-name BRANCH      Data sWeights branch or expression; pass
+                                 ``none`` to use uniform data weights
      --sweights-tree TREE        Separate tree for sWeights
 
    Variables

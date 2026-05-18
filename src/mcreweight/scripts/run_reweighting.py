@@ -2,7 +2,7 @@ import argparse
 from types import SimpleNamespace
 from os import makedirs, environ
 from mcreweight.core import run_reweighting_pipeline
-from mcreweight.io import load_config, get_from_cfg
+from mcreweight.io import load_config, get_from_cfg, parse_none
 
 
 # ---------------------------------------------------------
@@ -47,7 +47,7 @@ def merge_args_with_config(args, cfg):
         tree_data=cli_or_cfg(
             args.tree_data, cfg, ["input", "data", "tree"], "DecayTree"
         ),
-        sweights_name=(
+        sweights_name=parse_none(
             cli_or_cfg(
                 args.sweights_name, cfg, ["input", "data", "sweights_name"], None
             )
