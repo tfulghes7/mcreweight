@@ -2718,8 +2718,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: mcreweight
-  version: 0.0.post1.dev17+gc35689bed.d20260518
-  sha256: 38b14d8938a788807ee526d99707f63ed5e38ee31266230db0fb058a6ace52f1
+  version: 0.0.post1.dev18+g0b11a4d0a
+  sha256: 4f9928ee29911974d112f0f2003ef32840268a150446b3aebd746b7b91f41728
   requires_dist:
   - awkward-pandas>=2023.8.0
   - awkward>=2.6.0
@@ -2739,7 +2739,7 @@ packages:
   - seaborn>=0.12.0
   - shap>=0.44.0
   - skl2onnx>=1.15.0
-  - uproot>=5.7.4
+  - uproot>=5.7.2
   - xgboost>=1.7.0
   requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/10/b1/8938e8830b0ee2e167fc75a094dea766a1152bde46752cd9bfc57ee78a82/ml_dtypes-0.5.4-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
