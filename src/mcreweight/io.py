@@ -236,7 +236,10 @@ def save_data(
             writer = f.mkrntuple(output_tree, branch_dict)
             writer.extend(branch_dict)
         elif ntuple_type == "TTree":
-            f[output_tree] = branch_dict
+            # f[tree] = dict writes RNTuple in uproot >= 5.3; mktree+extend forces TTree
+            branch_types = {k: ak.to_numpy(v).dtype for k, v in branch_dict.items()}
+            f.mktree(output_tree, branch_types)
+            f[output_tree].extend(branch_dict)
         else:
             raise ValueError(f"Unsupported ntuple type: {ntuple_type}")
 
