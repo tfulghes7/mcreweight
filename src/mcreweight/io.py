@@ -237,7 +237,14 @@ def save_data(
             writer.extend(branch_dict)
         elif ntuple_type == "TTree":
             # f[tree] = dict writes RNTuple in uproot >= 5.3; mktree+extend forces TTree
-            branch_types = {k: ak.to_numpy(v).dtype for k, v in branch_dict.items()}
+            branch_types = {}
+            for k, v in branch_dict.items():
+                try:
+                    branch_types[k] = ak.to_numpy(v).dtype
+                except (ValueError, TypeError):
+                    # jagged (variable-length) branch: use "var * dtype" notation
+                    inner_dtype = ak.to_numpy(ak.flatten(v, axis=None)).dtype
+                    branch_types[k] = f"var * {inner_dtype}"
             f.mktree(output_tree, branch_types)
             f[output_tree].extend(branch_dict)
         else:
