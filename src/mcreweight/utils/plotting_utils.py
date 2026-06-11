@@ -1,7 +1,10 @@
 import itertools
+import logging
 import math
 
 import matplotlib.pyplot as plt
+
+
 import numpy as np
 import seaborn as sns
 import shap
@@ -15,6 +18,116 @@ from mcreweight.utils.utils import (
     weighted_corr_matrix,
     weighted_ks_statistic,
 )
+
+# Suppress "findfont: Font family '...' not found" messages that come from
+# matplotlib scanning system fonts referenced by fontconfig but not installed
+# (e.g. Times New Roman on Linux).  DejaVu Sans is used as the fallback and
+# renders correctly; the warnings are not actionable.
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+
+_STYLE = "plain"
+_SAMPLE_LABEL = None
+
+
+def configure_style(style="plain", sample_label=None):
+    """Configure the plot style and optional sample label for the session.
+
+    Args:
+        style (str): ``"plain"`` (default custom LHCb-like style) or
+            ``"LHCb"`` (mplhep LHCb2 style with experiment label on each plot).
+        sample_label (str | None): Text placed in the top-right of each frame
+            when style is ``"LHCb"``. Ignored for ``"plain"``.
+    """
+    global _STYLE, _SAMPLE_LABEL
+    _STYLE = style
+    _SAMPLE_LABEL = sample_label
+    _apply_style()
+
+
+def _apply_style():
+    """Apply the currently configured style."""
+    if _STYLE == "LHCb":
+        import mplhep as hep
+
+        # hep.style.use triggers findfont log messages for fonts not installed on
+        # this system (Tex Gyre Termes → Times New Roman fallback).  Silence the
+        # font-manager logger for that call; the rcParams block below replaces all
+        # serif/mathtext references with DejaVu Sans so rendering stays clean.
+        _fm_log = logging.getLogger("matplotlib.font_manager")
+        _prev_level = _fm_log.level
+        _fm_log.setLevel(logging.ERROR)
+        hep.style.use("LHCb2")
+        _fm_log.setLevel(_prev_level)
+
+        plt.rcParams.update(
+            {
+                # TeX Gyre Termes is metric-compatible with Times New Roman and is
+                # installed on this system.  Use the exact capitalisation so
+                # matplotlib finds it without falling back to Times New Roman.
+                "font.family": "serif",
+                "font.serif": [
+                    "TeX Gyre Termes",
+                    "Liberation Serif",
+                    "Nimbus Roman",
+                    "DejaVu Serif",
+                ],
+                # STIX fonts (bundled with matplotlib) provide math symbols in a
+                # Times-compatible style — no external font needed for $...$  text.
+                "mathtext.fontset": "stix",
+                # Restore readable sizes (LHCb2 ships labelsize=32, markersize=16)
+                "font.size": 14,
+                "figure.dpi": 100,
+                "axes.labelsize": 26,
+                "xtick.labelsize": 24,
+                "ytick.labelsize": 24,
+                "legend.fontsize": 24,
+                "legend.title_fontsize": 24,
+                "lines.markersize": 5,
+                "lines.linewidth": 1.5,
+                "lines.markeredgewidth": 0.8,
+                "errorbar.capsize": 2,
+            }
+        )
+    else:
+        set_lhcb_style()
+
+
+def _add_labels(
+    ax, x_min_lhcb=0.0, y_min_lhcb=1.02, x_min_sample=1.0, y_min_sample=1.02
+):
+    """Place "LHCb" outside the frame on the top-left and the optional sample
+    label outside the frame on the top-right.
+
+    Uses ``ax.text`` directly so the font (TeX Gyre Termes from rcParams) and
+    weight/style match the rest of the plot exactly.
+    No-op when style is not ``"LHCb"``.
+    """
+    if _STYLE != "LHCb":
+        return
+
+    label_size = plt.rcParams.get("axes.labelsize", 26)
+
+    ax.text(
+        x_min_lhcb,
+        y_min_lhcb,
+        "LHCb",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=label_size,
+        clip_on=False,
+    )
+    if _SAMPLE_LABEL:
+        ax.text(
+            x_min_sample,
+            y_min_sample,
+            _SAMPLE_LABEL,
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=label_size,
+            clip_on=False,
+        )
 
 
 MC_COLOR = "#c62828"
@@ -66,13 +179,25 @@ def _reshape_axes_grid(axes, n_rows, n_cols):
     return np.atleast_2d(np.array(axes, dtype=object)).reshape(n_rows, n_cols)
 
 
-def set_lhcb_style(grid=True, size=10, usetex=False):
+def set_lhcb_style(grid=True, size=12, usetex=False):
     """
     Set matplotlib plotting style close to "official" LHCb style
-    (serif fonts, inward ticks on all sides, minor ticks, light grid).
+    (TeX Gyre Termes serif font, inward ticks on all sides, minor ticks, light grid).
     """
     plt.rc("font", family="serif", size=size)
+    plt.rc(
+        "font",
+        **{
+            "serif": [
+                "TeX Gyre Termes",
+                "Liberation Serif",
+                "Nimbus Roman",
+                "DejaVu Serif",
+            ]
+        },
+    )
     plt.rc("text", usetex=usetex)
+    plt.rcParams["mathtext.fontset"] = "stix"
     plt.rcParams.update(
         {
             "figure.max_open_warning": 40,
@@ -96,17 +221,17 @@ def set_lhcb_style(grid=True, size=10, usetex=False):
             "xtick.top": True,
             "ytick.left": True,
             "ytick.right": True,
-            "axes.titlesize": 22,
-            "axes.labelsize": 22,
-            "xtick.labelsize": 20,
-            "ytick.labelsize": 20,
-            "legend.fontsize": 20,
+            "axes.titlesize": 26,
+            "axes.labelsize": 26,
+            "xtick.labelsize": 24,
+            "ytick.labelsize": 24,
+            "legend.fontsize": 24,
         }
     )
 
 
 try:
-    set_lhcb_style()
+    _apply_style()
 except Exception:
     pass
 
@@ -124,7 +249,7 @@ def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_
         title (str): Title of the plot.
         output_file (str): Path to save the output plot.
     """
-    set_lhcb_style()
+    _apply_style()
     if args.verbosity >= 3:
         print(
             f"[INFO] Computing correlation matrix for columns: {columns} with weights: {weights is not None}"
@@ -143,6 +268,7 @@ def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_
     else:
         corr = df[columns].corr()
     plt.figure(figsize=(16, 12))
+    ax_corr = plt.gca()
     sns.heatmap(
         corr,
         annot=True,
@@ -154,9 +280,8 @@ def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_
         yticklabels=[_label_for(x_labels, col) for col in columns],
         annot_kws={"size": 20},
     )
-    ax = plt.gca()
-    ax.set_xticks(range(len(columns)))
-    ax.set_xticklabels(
+    ax_corr.set_xticks(range(len(columns)))
+    ax_corr.set_xticklabels(
         [_label_for(x_labels, col) for col in columns], fontsize=22, rotation=45
     )
     plt.yticks(fontsize=22)
@@ -164,6 +289,7 @@ def plot_correlation_matrix(args, df, columns, weights, x_labels, title, output_
         plt.title(f"{title} (|weights| correlation)")
     else:
         plt.title(title)
+    _add_labels(ax_corr)
     plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
@@ -197,7 +323,7 @@ def plot_distributions(
         x_edges (dict, optional): Column -> bin edges mapping.
         pull_clip (float): Maximum absolute value for pull display.
     """
-    set_lhcb_style()
+    _apply_style()
     if args.verbosity >= 3:
         print(f"[INFO] Plotting columns: {columns}")
         print(f"[INFO] MC size: {len(mc)}, Data size: {len(data)}")
@@ -210,7 +336,7 @@ def plot_distributions(
     fig, axes = plt.subplots(
         grid_rows,
         n_cols,
-        figsize=(8.8 * n_cols, 6.6 * n_rows),
+        figsize=(10 * n_cols, 8 * n_rows),
         gridspec_kw={"height_ratios": [3.0, 1.0, 0.55] * n_rows},
         constrained_layout=False,
     )
@@ -322,12 +448,15 @@ def plot_distributions(
             markerfacecolor=DATA_COLOR,
             markeredgecolor=DATA_COLOR,
             label="Data",
+            markersize=5,
+            elinewidth=1,
             capsize=3,
         )
         ax_main.set_ylabel("A.U.")
         ax_main.legend()
         ax_main.grid(True, alpha=0.3)
         ax_main.set_xticklabels([])
+        _add_labels(ax_main)
 
         # --- Pull plot ---
         ax_pull = axes[row + 1, col]
@@ -347,9 +476,9 @@ def plot_distributions(
         left=0.10,
         right=0.96,
         top=0.93,
-        bottom=0.14,
-        wspace=0.34,
-        hspace=0.08,
+        bottom=0.10,
+        wspace=0.38,
+        hspace=0.18,
     )
 
     plt.savefig(output_file, bbox_inches="tight", dpi=300)
@@ -377,13 +506,13 @@ def plot_mc_distributions(
         output_file (str): Path to save the output plot.
         x_edges (dict, optional): Dictionary mapping column names to bin edges for histogramming.
     """
-    set_lhcb_style()
+    _apply_style()
     hist_settings = dict(bins=50, histtype="step", linewidth=1.5)
     n_cols = _subplot_column_count(len(columns))
     n_rows = math.ceil(len(columns) / n_cols)
 
     fig, axes = plt.subplots(
-        n_rows, n_cols, figsize=(8 * n_cols, 5 * n_rows), constrained_layout=True
+        n_rows, n_cols, figsize=(10 * n_cols, 6.5 * n_rows), constrained_layout=True
     )
     axes = _reshape_axes_grid(axes, n_rows, n_cols)
 
@@ -428,6 +557,7 @@ def plot_mc_distributions(
         ax_main.set_ylabel("A.U.")
         ax_main.set_xlabel(_label_for(x_labels, column))
         ax_main.legend()
+        _add_labels(ax_main)
 
     # Hide unused subplots
     total_plots = len(columns)
@@ -449,7 +579,7 @@ def plot_training_throughput(throughput, output_file):
     if not throughput:
         return
 
-    set_lhcb_style()
+    _apply_style()
 
     items = sorted(
         throughput.items(),
@@ -502,7 +632,7 @@ def plot_training_memory(memory_profile, output_file):
     if not memory_profile:
         return
 
-    set_lhcb_style()
+    _apply_style()
 
     items = sorted(
         memory_profile.items(),
@@ -556,7 +686,7 @@ def plot_roc_curve(sample, weights, methods, columns, output_file):
     Returns:
         scores: Dictionaries containing classifier scores for each method.
     """
-    set_lhcb_style()
+    _apply_style()
     fig, ax = plt.subplots(figsize=(16, 12))
 
     evaluate_reweighting(
@@ -578,6 +708,7 @@ def plot_roc_curve(sample, weights, methods, columns, output_file):
     ax.set_ylabel("True Positive Rate")
     ax.set_title("ROC Curve: Classifier distinguishing reweighted MC from Data")
     ax.legend(loc="lower right")
+    _add_labels(ax)
     plt.savefig(output_file)
     print(f"[INFO] ROC curve saved to: {output_file}")
     plt.close()
@@ -597,7 +728,7 @@ def plot_classifier_output(
     ``min_score`` and ``max_score``.
     """
 
-    set_lhcb_style()
+    _apply_style()
 
     plt.figure(figsize=(16, 12))
 
@@ -644,6 +775,7 @@ def plot_classifier_output(
     plt.ylabel("Density")
     plt.title("Classifier score distributions")
     plt.legend()
+    _add_labels(plt.gca())
     plt.savefig(output_file, bbox_inches="tight")
     plt.close()
 
@@ -660,7 +792,7 @@ def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):
         bins (int): Number of histogram bins.
         xlim (tuple or None): Limit for the x-axis, e.g., (0, 5). Default: (0, 10).
     """
-    set_lhcb_style()
+    _apply_style()
     plt.figure(figsize=(10, 7))
     for label, w in weights.items():
         color = DATA_COLOR if label == "Data" else METHOD_COLORS.get(label, MC_COLOR)
@@ -681,6 +813,7 @@ def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):
     if xlim:
         plt.xlim(xlim)
     plt.yscale("log")  # Helps visualize long tails
+    _add_labels(plt.gca())
     plt.tight_layout()
     plt.savefig(output_file)
     print(f"[INFO] Weight distributions plot saved to: {output_file}")
@@ -703,7 +836,7 @@ def plot_2d_score_maps(
         x_labels (dict): Dictionary mapping column names to x-axis labels.
         n_bins (int): Number of bins for the 2D histogram.
     """
-    set_lhcb_style()
+    _apply_style()
 
     var_pairs = list(itertools.combinations(vars, 2))
     n_plots = len(var_pairs)
@@ -767,6 +900,7 @@ def plot_2d_score_maps(
         ax.set_xlabel(_label_for(x_labels, var_x))
         ax.set_ylabel(_label_for(x_labels, var_y))
         fig.colorbar(im, ax=ax)
+        _add_labels(ax, x_min_lhcb=0.02, y_min_lhcb=0.98)
 
     # Hide unused axes
     for i in range(n_plots, len(axes)):
@@ -793,7 +927,7 @@ def plot_feature_importance(
         output_file (str): Path to save figure
         max_display (int): Max number of features to show
     """
-    set_lhcb_style()
+    _apply_style()
 
     X = mc[feature_names]
 
@@ -848,7 +982,7 @@ def plot_2d_pull_maps(
         pull_clip (float): Maximum absolute value for pull map clipping
     """
 
-    set_lhcb_style()
+    _apply_style()
 
     var_pairs = list(itertools.combinations(columns, 2))
     n_plots = len(var_pairs)
@@ -936,6 +1070,7 @@ def plot_2d_pull_maps(
 
         cbar = fig.colorbar(im, ax=ax)
         cbar.set_label("Pull")
+        _add_labels(ax, x_min_lhcb=0.02, y_min_lhcb=0.98)
 
     # --------------------------------------------------
     # Hide unused pads
