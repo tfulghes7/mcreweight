@@ -124,6 +124,10 @@ def merge_args_with_config(args, cfg):
         # ---------------------
         weightsdir=cli_or_cfg(args.weightsdir, cfg, ["output", "weightsdir"], None),
         plotdir=cli_or_cfg(args.plotdir, cfg, ["output", "plotdir"], "plots"),
+        style=cli_or_cfg(args.style, cfg, ["plotting", "style"], "plain"),
+        sample_label=cli_or_cfg(
+            args.sample_label, cfg, ["plotting", "sample_label"], None
+        ),
     )
 
 
@@ -296,6 +300,18 @@ def build_parser():
     parser.add_argument(
         "--path-xlabels",
         help="Path to YAML file containing x-axis labels for plots (overrides YAML config)",
+    )
+    parser.add_argument(
+        "--style",
+        choices=["plain", "LHCb"],
+        default=None,
+        help="Plot style: 'plain' (default) or 'LHCb' (mplhep LHCb2 with experiment label)",
+    )
+    parser.add_argument(
+        "--sample-label",
+        dest="sample_label",
+        default=None,
+        help="Text written top-right on each plot frame when style is 'LHCb' (overrides YAML config)",
     )
 
     return parser

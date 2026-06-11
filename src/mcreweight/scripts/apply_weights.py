@@ -96,6 +96,10 @@ def merge_args_with_config(args, cfg):
         ),
         plotdir=cli_or_cfg(args.plotdir, cfg, ["reweighting", "plotdir"], "plots"),
         verbosity=args.verbosity,
+        style=cli_or_cfg(args.style, cfg, ["plotting", "style"], "plain"),
+        sample_label=cli_or_cfg(
+            args.sample_label, cfg, ["plotting", "sample_label"], None
+        ),
         # --------------------
         # Output
         # --------------------
@@ -233,6 +237,18 @@ def build_parser():
     # Plotting
     parser.add_argument(
         "--path-xlabels", help="Path to xlabels file (overrides config)"
+    )
+    parser.add_argument(
+        "--style",
+        choices=["plain", "LHCb"],
+        default=None,
+        help="Plot style: 'plain' (default) or 'LHCb' (mplhep LHCb2 with experiment label)",
+    )
+    parser.add_argument(
+        "--sample-label",
+        dest="sample_label",
+        default=None,
+        help="Text written top-right on each plot frame when style is 'LHCb' (overrides config)",
     )
 
     return parser

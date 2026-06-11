@@ -516,6 +516,10 @@ def run_reweighting_pipeline(args, plotdir, weightsdir):
     """
     Main function to run the reweighting pipeline.
     """
+    plt.configure_style(
+        style=getattr(args, "style", "plain"),
+        sample_label=getattr(args, "sample_label", None),
+    )
     if args.verbosity >= 1:
         print("[INFO] Starting reweighting pipeline...")
 
@@ -656,6 +660,10 @@ def apply_weights_pipeline(args, plotdir, weightsdir, out_weightsdir):
     """
     Main function to apply weights to the data using the trained model.
     """
+    plt.configure_style(
+        style=getattr(args, "style", "plain"),
+        sample_label=getattr(args, "sample_label", None),
+    )
     if args.verbosity >= 1:
         print("[INFO] Loading data for applying weights...")
 
