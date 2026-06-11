@@ -67,8 +67,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c6/21/2ffbab5714e72f2483207b4a1de79b2eecd9debbf666ff4e7067bcc5c134/llvmlite-0.43.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/cd/ce6e848bbf2c32314c9b237839119c5a564a59725b53157c856e90937b7a/markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/07/06/272aca07a38804d93b6050813de41ca7ab0e29ba7a9dd098e12037c919a9/matplotlib-3.9.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/fc/b7/d8bcec2626c35f96972bff656299fef4578113ea6193c8fdad324710410c/matplotlib-3.10.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/10/b1/8938e8830b0ee2e167fc75a094dea766a1152bde46752cd9bfc57ee78a82/ml_dtypes-0.5.4-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/58/cb4ac5b8f7ec64200460aef1fed88258fb872ceef504ab1f989d2ff0f684/numba-0.60.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/25/ab/cb5809cb1f66431632d63dc028c58cb91492725c74dddc4b97ba62e88a92/numexpr-2.10.2-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
@@ -100,6 +102,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e4/3c/e3a93bfa7e8693c825df5ec02a40f7ff5f0950e02198b1e85da9315a8d47/xgboost-2.1.4-py3-none-manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/2d/4b/55ab404c56cd70a2cf5ecfe484838865d0fea5627365c6c8ca156bd09c8f/xxhash-3.6.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -155,8 +158,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/23/ff/6ca7e98998b573b4bd6566f15c35e5c8bea829663a6df0c7aa55ab559da9/llvmlite-0.43.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/4b/3541d44f3937ba468b75da9eebcae497dcf67adb65caa16760b0a6807ebb/markupsafe-3.0.3-cp310-cp310-macosx_10_9_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/94/27d2e2c30d54b56c7b764acc1874a909e34d1965a427fc7092bb6a588b63/matplotlib-3.9.4-cp310-cp310-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/18/6f/340b04986e67aac6f66c5145ce68bf72c64bed30f92c8913499a6e6b8f99/matplotlib-3.10.9-cp310-cp310-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/cf/baa13a7e3556d73d9e38021e6d6aa4aeb30d8b94545aa8b70d0f24a1ccc4/numba-0.60.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fd/dc/bd84219318826d138b7e729ac3ffce3c706ab9d810ce74326a55c7252dd1/numexpr-2.10.2-cp310-cp310-macosx_10_9_x86_64.whl
@@ -187,6 +192,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/fe/7a1d2342c2e93f22b41515e02b73504c7809247b16ae395bd2ee7ef11e19/xgboost-2.1.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/34/ee/f9f1d656ad168681bb0f6b092372c1e533c4416b8069b1896a175c46e484/xxhash-3.6.0-cp310-cp310-macosx_10_9_x86_64.whl
@@ -242,8 +248,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ca/5c/a27f9257f86f0cda3f764ff21d9f4217b9f6a0d45e7a39ecfa7905f524ce/llvmlite-0.43.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/98/1b/fbd8eed11021cabd9226c37342fa6ca4e8a98d8188a8d9b66740494960e4/markupsafe-3.0.3-cp310-cp310-macosx_11_0_arm64.whl
-      - pypi: https://files.pythonhosted.org/packages/c6/25/828273307e40a68eb8e9df832b6b2aaad075864fdc1de4b1b81e40b09e48/matplotlib-3.9.4-cp310-cp310-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/bb/2f/127081eb83162053ebb9678ceac64220b93a663e0167432566e9c7c82aab/matplotlib-3.10.9-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ac/ba/4b57fa498564457c3cc9fc9e570a6b08e6086c74220f24baaf04e54b995f/numba-0.60.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/31/6a/b1f08141283327478a57490c0ab3f26a634d4741ff33b9e22f760a7cedb0/numexpr-2.10.2-cp310-cp310-macosx_11_0_arm64.whl
@@ -274,6 +282,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/b6/653a70910739f127adffbefb688ebc22b51139292757de7c22b1e04ce792/xgboost-2.1.4-py3-none-macosx_12_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/a3/b1/93508d9460b292c74a09b83d16750c52a0ead89c51eea9951cb97a60d959/xxhash-3.6.0-cp310-cp310-macosx_11_0_arm64.whl
@@ -354,8 +363,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c6/21/2ffbab5714e72f2483207b4a1de79b2eecd9debbf666ff4e7067bcc5c134/llvmlite-0.43.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/cd/ce6e848bbf2c32314c9b237839119c5a564a59725b53157c856e90937b7a/markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/07/06/272aca07a38804d93b6050813de41ca7ab0e29ba7a9dd098e12037c919a9/matplotlib-3.9.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/fc/b7/d8bcec2626c35f96972bff656299fef4578113ea6193c8fdad324710410c/matplotlib-3.10.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/10/b1/8938e8830b0ee2e167fc75a094dea766a1152bde46752cd9bfc57ee78a82/ml_dtypes-0.5.4-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/58/cb4ac5b8f7ec64200460aef1fed88258fb872ceef504ab1f989d2ff0f684/numba-0.60.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/25/ab/cb5809cb1f66431632d63dc028c58cb91492725c74dddc4b97ba62e88a92/numexpr-2.10.2-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
@@ -399,6 +410,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e4/3c/e3a93bfa7e8693c825df5ec02a40f7ff5f0950e02198b1e85da9315a8d47/xgboost-2.1.4-py3-none-manylinux_2_28_x86_64.whl
@@ -463,8 +475,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/23/ff/6ca7e98998b573b4bd6566f15c35e5c8bea829663a6df0c7aa55ab559da9/llvmlite-0.43.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/4b/3541d44f3937ba468b75da9eebcae497dcf67adb65caa16760b0a6807ebb/markupsafe-3.0.3-cp310-cp310-macosx_10_9_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/94/27d2e2c30d54b56c7b764acc1874a909e34d1965a427fc7092bb6a588b63/matplotlib-3.9.4-cp310-cp310-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/18/6f/340b04986e67aac6f66c5145ce68bf72c64bed30f92c8913499a6e6b8f99/matplotlib-3.10.9-cp310-cp310-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/cf/baa13a7e3556d73d9e38021e6d6aa4aeb30d8b94545aa8b70d0f24a1ccc4/numba-0.60.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fd/dc/bd84219318826d138b7e729ac3ffce3c706ab9d810ce74326a55c7252dd1/numexpr-2.10.2-cp310-cp310-macosx_10_9_x86_64.whl
@@ -507,6 +521,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/fe/7a1d2342c2e93f22b41515e02b73504c7809247b16ae395bd2ee7ef11e19/xgboost-2.1.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl
@@ -571,8 +586,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ca/5c/a27f9257f86f0cda3f764ff21d9f4217b9f6a0d45e7a39ecfa7905f524ce/llvmlite-0.43.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/98/1b/fbd8eed11021cabd9226c37342fa6ca4e8a98d8188a8d9b66740494960e4/markupsafe-3.0.3-cp310-cp310-macosx_11_0_arm64.whl
-      - pypi: https://files.pythonhosted.org/packages/c6/25/828273307e40a68eb8e9df832b6b2aaad075864fdc1de4b1b81e40b09e48/matplotlib-3.9.4-cp310-cp310-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/bb/2f/127081eb83162053ebb9678ceac64220b93a663e0167432566e9c7c82aab/matplotlib-3.10.9-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ac/ba/4b57fa498564457c3cc9fc9e570a6b08e6086c74220f24baaf04e54b995f/numba-0.60.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/31/6a/b1f08141283327478a57490c0ab3f26a634d4741ff33b9e22f760a7cedb0/numexpr-2.10.2-cp310-cp310-macosx_11_0_arm64.whl
@@ -615,6 +632,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/b6/653a70910739f127adffbefb688ebc22b51139292757de7c22b1e04ce792/xgboost-2.1.4-py3-none-macosx_12_0_arm64.whl
@@ -690,8 +708,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c6/21/2ffbab5714e72f2483207b4a1de79b2eecd9debbf666ff4e7067bcc5c134/llvmlite-0.43.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/cd/ce6e848bbf2c32314c9b237839119c5a564a59725b53157c856e90937b7a/markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/07/06/272aca07a38804d93b6050813de41ca7ab0e29ba7a9dd098e12037c919a9/matplotlib-3.9.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/fc/b7/d8bcec2626c35f96972bff656299fef4578113ea6193c8fdad324710410c/matplotlib-3.10.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/10/b1/8938e8830b0ee2e167fc75a094dea766a1152bde46752cd9bfc57ee78a82/ml_dtypes-0.5.4-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/58/cb4ac5b8f7ec64200460aef1fed88258fb872ceef504ab1f989d2ff0f684/numba-0.60.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
@@ -728,6 +748,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e4/3c/e3a93bfa7e8693c825df5ec02a40f7ff5f0950e02198b1e85da9315a8d47/xgboost-2.1.4-py3-none-manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/2d/4b/55ab404c56cd70a2cf5ecfe484838865d0fea5627365c6c8ca156bd09c8f/xxhash-3.6.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -785,8 +806,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/23/ff/6ca7e98998b573b4bd6566f15c35e5c8bea829663a6df0c7aa55ab559da9/llvmlite-0.43.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/4b/3541d44f3937ba468b75da9eebcae497dcf67adb65caa16760b0a6807ebb/markupsafe-3.0.3-cp310-cp310-macosx_10_9_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/94/27d2e2c30d54b56c7b764acc1874a909e34d1965a427fc7092bb6a588b63/matplotlib-3.9.4-cp310-cp310-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/18/6f/340b04986e67aac6f66c5145ce68bf72c64bed30f92c8913499a6e6b8f99/matplotlib-3.10.9-cp310-cp310-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/cf/baa13a7e3556d73d9e38021e6d6aa4aeb30d8b94545aa8b70d0f24a1ccc4/numba-0.60.0-cp310-cp310-macosx_10_9_x86_64.whl
@@ -822,6 +845,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/fe/7a1d2342c2e93f22b41515e02b73504c7809247b16ae395bd2ee7ef11e19/xgboost-2.1.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/34/ee/f9f1d656ad168681bb0f6b092372c1e533c4416b8069b1896a175c46e484/xxhash-3.6.0-cp310-cp310-macosx_10_9_x86_64.whl
@@ -879,8 +903,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ca/5c/a27f9257f86f0cda3f764ff21d9f4217b9f6a0d45e7a39ecfa7905f524ce/llvmlite-0.43.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/98/1b/fbd8eed11021cabd9226c37342fa6ca4e8a98d8188a8d9b66740494960e4/markupsafe-3.0.3-cp310-cp310-macosx_11_0_arm64.whl
-      - pypi: https://files.pythonhosted.org/packages/c6/25/828273307e40a68eb8e9df832b6b2aaad075864fdc1de4b1b81e40b09e48/matplotlib-3.9.4-cp310-cp310-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/bb/2f/127081eb83162053ebb9678ceac64220b93a663e0167432566e9c7c82aab/matplotlib-3.10.9-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ac/ba/4b57fa498564457c3cc9fc9e570a6b08e6086c74220f24baaf04e54b995f/numba-0.60.0-cp310-cp310-macosx_11_0_arm64.whl
@@ -916,6 +942,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/b6/653a70910739f127adffbefb688ebc22b51139292757de7c22b1e04ce792/xgboost-2.1.4-py3-none-macosx_12_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/a3/b1/93508d9460b292c74a09b83d16750c52a0ead89c51eea9951cb97a60d959/xxhash-3.6.0-cp310-cp310-macosx_11_0_arm64.whl
@@ -990,8 +1017,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c6/21/2ffbab5714e72f2483207b4a1de79b2eecd9debbf666ff4e7067bcc5c134/llvmlite-0.43.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/cd/ce6e848bbf2c32314c9b237839119c5a564a59725b53157c856e90937b7a/markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/07/06/272aca07a38804d93b6050813de41ca7ab0e29ba7a9dd098e12037c919a9/matplotlib-3.9.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/fc/b7/d8bcec2626c35f96972bff656299fef4578113ea6193c8fdad324710410c/matplotlib-3.10.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/10/b1/8938e8830b0ee2e167fc75a094dea766a1152bde46752cd9bfc57ee78a82/ml_dtypes-0.5.4-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/58/cb4ac5b8f7ec64200460aef1fed88258fb872ceef504ab1f989d2ff0f684/numba-0.60.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/25/ab/cb5809cb1f66431632d63dc028c58cb91492725c74dddc4b97ba62e88a92/numexpr-2.10.2-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
@@ -1026,6 +1055,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e4/3c/e3a93bfa7e8693c825df5ec02a40f7ff5f0950e02198b1e85da9315a8d47/xgboost-2.1.4-py3-none-manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/2d/4b/55ab404c56cd70a2cf5ecfe484838865d0fea5627365c6c8ca156bd09c8f/xxhash-3.6.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -1083,8 +1113,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/23/ff/6ca7e98998b573b4bd6566f15c35e5c8bea829663a6df0c7aa55ab559da9/llvmlite-0.43.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/4b/3541d44f3937ba468b75da9eebcae497dcf67adb65caa16760b0a6807ebb/markupsafe-3.0.3-cp310-cp310-macosx_10_9_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/94/27d2e2c30d54b56c7b764acc1874a909e34d1965a427fc7092bb6a588b63/matplotlib-3.9.4-cp310-cp310-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/18/6f/340b04986e67aac6f66c5145ce68bf72c64bed30f92c8913499a6e6b8f99/matplotlib-3.10.9-cp310-cp310-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/cf/baa13a7e3556d73d9e38021e6d6aa4aeb30d8b94545aa8b70d0f24a1ccc4/numba-0.60.0-cp310-cp310-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fd/dc/bd84219318826d138b7e729ac3ffce3c706ab9d810ce74326a55c7252dd1/numexpr-2.10.2-cp310-cp310-macosx_10_9_x86_64.whl
@@ -1118,6 +1150,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/fe/7a1d2342c2e93f22b41515e02b73504c7809247b16ae395bd2ee7ef11e19/xgboost-2.1.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/34/ee/f9f1d656ad168681bb0f6b092372c1e533c4416b8069b1896a175c46e484/xxhash-3.6.0-cp310-cp310-macosx_10_9_x86_64.whl
@@ -1175,8 +1208,10 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ca/5c/a27f9257f86f0cda3f764ff21d9f4217b9f6a0d45e7a39ecfa7905f524ce/llvmlite-0.43.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/87/fb/99f81ac72ae23375f22b7afdb7642aba97c00a713c217124420147681a2f/mako-1.3.10-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/98/1b/fbd8eed11021cabd9226c37342fa6ca4e8a98d8188a8d9b66740494960e4/markupsafe-3.0.3-cp310-cp310-macosx_11_0_arm64.whl
-      - pypi: https://files.pythonhosted.org/packages/c6/25/828273307e40a68eb8e9df832b6b2aaad075864fdc1de4b1b81e40b09e48/matplotlib-3.9.4-cp310-cp310-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/bb/2f/127081eb83162053ebb9678ceac64220b93a663e0167432566e9c7c82aab/matplotlib-3.10.9-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/fe/3a/c5b855752a70267ff729c349e650263adb3c206c29d28cc8ea7ace30a1d5/ml_dtypes-0.5.4-cp310-cp310-macosx_10_9_universal2.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ac/ba/4b57fa498564457c3cc9fc9e570a6b08e6086c74220f24baaf04e54b995f/numba-0.60.0-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/31/6a/b1f08141283327478a57490c0ab3f26a634d4741ff33b9e22f760a7cedb0/numexpr-2.10.2-cp310-cp310-macosx_11_0_arm64.whl
@@ -1210,6 +1245,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f5/b6/653a70910739f127adffbefb688ebc22b51139292757de7c22b1e04ce792/xgboost-2.1.4-py3-none-macosx_12_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/a3/b1/93508d9460b292c74a09b83d16750c52a0ead89c51eea9951cb97a60d959/xxhash-3.6.0-cp310-cp310-macosx_11_0_arm64.whl
@@ -2653,10 +2689,10 @@ packages:
   version: 3.0.3
   sha256: 2f981d352f04553a7171b8e44369f2af4055f888dfb147d55e42d29e29e74559
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/07/06/272aca07a38804d93b6050813de41ca7ab0e29ba7a9dd098e12037c919a9/matplotlib-3.9.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+- pypi: https://files.pythonhosted.org/packages/18/6f/340b04986e67aac6f66c5145ce68bf72c64bed30f92c8913499a6e6b8f99/matplotlib-3.10.9-cp310-cp310-macosx_10_12_x86_64.whl
   name: matplotlib
-  version: 3.9.4
-  sha256: 18ebcf248030173b59a868fda1fe42397253f6698995b55e81e1f57431d85e50
+  version: 3.10.9
+  sha256: 77210dce9cb8153dffc967efaae990543392563d5a376d4dd8539bebcb0ed217
   requires_dist:
   - contourpy>=1.0.1
   - cycler>=0.10
@@ -2665,19 +2701,17 @@ packages:
   - numpy>=1.23
   - packaging>=20.0
   - pillow>=8
-  - pyparsing>=2.3.1
+  - pyparsing>=3
   - python-dateutil>=2.7
-  - importlib-resources>=3.2.0 ; python_full_version < '3.10'
   - meson-python>=0.13.1,<0.17.0 ; extra == 'dev'
-  - numpy>=1.25 ; extra == 'dev'
-  - pybind11>=2.6,!=2.13.3 ; extra == 'dev'
-  - setuptools-scm>=7 ; extra == 'dev'
+  - pybind11>=2.13.2,!=2.13.3 ; extra == 'dev'
+  - setuptools-scm>=7,<10 ; extra == 'dev'
   - setuptools>=64 ; extra == 'dev'
-  requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/7e/94/27d2e2c30d54b56c7b764acc1874a909e34d1965a427fc7092bb6a588b63/matplotlib-3.9.4-cp310-cp310-macosx_10_12_x86_64.whl
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/bb/2f/127081eb83162053ebb9678ceac64220b93a663e0167432566e9c7c82aab/matplotlib-3.10.9-cp310-cp310-macosx_11_0_arm64.whl
   name: matplotlib
-  version: 3.9.4
-  sha256: c5fdd7abfb706dfa8d307af64a87f1a862879ec3cd8d0ec8637458f0885b9c50
+  version: 3.10.9
+  sha256: 1e7698ac9868428e84d2c967424803b2472ff7167d9d6590d4204ed775343c3b
   requires_dist:
   - contourpy>=1.0.1
   - cycler>=0.10
@@ -2686,19 +2720,17 @@ packages:
   - numpy>=1.23
   - packaging>=20.0
   - pillow>=8
-  - pyparsing>=2.3.1
+  - pyparsing>=3
   - python-dateutil>=2.7
-  - importlib-resources>=3.2.0 ; python_full_version < '3.10'
   - meson-python>=0.13.1,<0.17.0 ; extra == 'dev'
-  - numpy>=1.25 ; extra == 'dev'
-  - pybind11>=2.6,!=2.13.3 ; extra == 'dev'
-  - setuptools-scm>=7 ; extra == 'dev'
+  - pybind11>=2.13.2,!=2.13.3 ; extra == 'dev'
+  - setuptools-scm>=7,<10 ; extra == 'dev'
   - setuptools>=64 ; extra == 'dev'
-  requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/c6/25/828273307e40a68eb8e9df832b6b2aaad075864fdc1de4b1b81e40b09e48/matplotlib-3.9.4-cp310-cp310-macosx_11_0_arm64.whl
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/fc/b7/d8bcec2626c35f96972bff656299fef4578113ea6193c8fdad324710410c/matplotlib-3.10.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: matplotlib
-  version: 3.9.4
-  sha256: d89bc4e85e40a71d1477780366c27fb7c6494d293e1617788986f74e2a03d7ff
+  version: 3.10.9
+  sha256: 1aa972116abb4c9d201bf245620b433726cb6856f3bef6a78f776a00f5c92d37
   requires_dist:
   - contourpy>=1.0.1
   - cycler>=0.10
@@ -2707,25 +2739,24 @@ packages:
   - numpy>=1.23
   - packaging>=20.0
   - pillow>=8
-  - pyparsing>=2.3.1
+  - pyparsing>=3
   - python-dateutil>=2.7
-  - importlib-resources>=3.2.0 ; python_full_version < '3.10'
   - meson-python>=0.13.1,<0.17.0 ; extra == 'dev'
-  - numpy>=1.25 ; extra == 'dev'
-  - pybind11>=2.6,!=2.13.3 ; extra == 'dev'
-  - setuptools-scm>=7 ; extra == 'dev'
+  - pybind11>=2.13.2,!=2.13.3 ; extra == 'dev'
+  - setuptools-scm>=7,<10 ; extra == 'dev'
   - setuptools>=64 ; extra == 'dev'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: ./
   name: mcreweight
-  version: 0.0.post1.dev18+g0b11a4d0a
-  sha256: 4f9928ee29911974d112f0f2003ef32840268a150446b3aebd746b7b91f41728
+  version: 0.0.post1.dev22+g3e4621ee4
+  sha256: 2c347ded4b8cb8b773783d33e2957a18d5ceceadf93f007b02d68fa801ec5965
   requires_dist:
   - awkward-pandas>=2023.8.0
   - awkward>=2.6.0
   - hep-ml>=0.8.0
   - joblib>=1.3.0
   - matplotlib>=3.4.0
+  - mplhep>=0.3.0
   - numexpr>=2.7.0
   - numpy>=1.20.0
   - onnx>=1.15.0
@@ -2774,6 +2805,79 @@ packages:
   - pylint>=2.6.0 ; extra == 'dev'
   - pyink ; extra == 'dev'
   requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/5e/00/857293b2f0fd292f69072c48d15f9ea9e7b4b6dfb2908fd9766bda5f346e/mplhep-1.2.1-py3-none-any.whl
+  name: mplhep
+  version: 1.2.1
+  sha256: 6b2df21d25c2ad58657336c70ee6d37fb220d58ef300e93a91bf8057be6b38ab
+  requires_dist:
+  - matplotlib>=3.10.8
+  - mplhep-data>=0.0.4
+  - numpy>=1.16.0
+  - packaging
+  - uhi>=0.2.0
+  - boost-histogram ; extra == 'all'
+  - bumpversion ; extra == 'all'
+  - docstring-inheritance ; extra == 'all'
+  - griffe-inherited-docstrings ; extra == 'all'
+  - hist ; extra == 'all'
+  - jupyter ; extra == 'all'
+  - markdown-exec ; extra == 'all'
+  - mike ; extra == 'all'
+  - mkdocs-git-committers-plugin-2 ; extra == 'all'
+  - mkdocs-git-revision-date-localized-plugin ; extra == 'all'
+  - mkdocs-material[imaging]>=9.0 ; extra == 'all'
+  - mkdocs-minify-plugin ; extra == 'all'
+  - mkdocs>=1.6 ; extra == 'all'
+  - mkdocstrings[python]>=0.20 ; extra == 'all'
+  - neoteroi-mkdocs ; extra == 'all'
+  - prek ; extra == 'all'
+  - pytest-benchmark ; extra == 'all'
+  - pytest-mock ; extra == 'all'
+  - pytest-mpl ; extra == 'all'
+  - pytest-xdist ; extra == 'all'
+  - pytest>=6.0 ; extra == 'all'
+  - questionary ; extra == 'all'
+  - scikit-hep-testdata ; extra == 'all'
+  - scipy>=1.1.0 ; extra == 'all'
+  - seaborn ; extra == 'all'
+  - twine ; extra == 'all'
+  - uproot>=5.0 ; extra == 'all'
+  - bumpversion ; extra == 'dev'
+  - jupyter ; extra == 'dev'
+  - prek ; extra == 'dev'
+  - questionary ; extra == 'dev'
+  - twine ; extra == 'dev'
+  - docstring-inheritance ; extra == 'docs'
+  - griffe-inherited-docstrings ; extra == 'docs'
+  - markdown-exec ; extra == 'docs'
+  - mike ; extra == 'docs'
+  - mkdocs-git-committers-plugin-2 ; extra == 'docs'
+  - mkdocs-git-revision-date-localized-plugin ; extra == 'docs'
+  - mkdocs-material[imaging]>=9.0 ; extra == 'docs'
+  - mkdocs-minify-plugin ; extra == 'docs'
+  - mkdocs>=1.6 ; extra == 'docs'
+  - mkdocstrings[python]>=0.20 ; extra == 'docs'
+  - neoteroi-mkdocs ; extra == 'docs'
+  - boost-histogram ; extra == 'test'
+  - hist ; extra == 'test'
+  - pytest-benchmark ; extra == 'test'
+  - pytest-mock ; extra == 'test'
+  - pytest-mpl ; extra == 'test'
+  - pytest-xdist ; extra == 'test'
+  - pytest>=6.0 ; extra == 'test'
+  - scikit-hep-testdata ; extra == 'test'
+  - scipy>=1.1.0 ; extra == 'test'
+  - seaborn ; extra == 'test'
+  - uproot>=5.0 ; extra == 'test'
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/46/b3/9fd3f0124db0fba54be9913f1f9292b8d1ace59948b379b66c6c33f2d291/mplhep_data-0.1.0-py3-none-any.whl
+  name: mplhep-data
+  version: 0.1.0
+  sha256: 0757bbdf5707d68ae03cd980e043f1b8d176aea766dc6c33338a572c20e20755
+  requires_dist:
+  - pytest>=4.6 ; extra == 'dev'
+  - pytest>=4.6 ; extra == 'test'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
   name: mpmath
   version: 1.3.0
@@ -4630,6 +4734,16 @@ packages:
   purls: []
   size: 119135
   timestamp: 1767016325805
+- pypi: https://files.pythonhosted.org/packages/26/d3/58b6e548e7db998c4f3eefcacb74b6c256607e6dfdd1d97679d4864116d8/uhi-1.1.1-py3-none-any.whl
+  name: uhi
+  version: 1.1.1
+  sha256: e71862637f312b54c091cd771dd236e1a9fbe450de937bcf21e30ad0b7013aae
+  requires_dist:
+  - numpy>=1.19.3
+  - typing-extensions>=4 ; python_full_version < '3.11'
+  - h5py ; extra == 'hdf5'
+  - fastjsonschema ; extra == 'schema'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/74/03/d426348a5f13514182c1d1afab2285ec25a94bacc8d2f8d2cc627496754a/uproot-5.7.4-py3-none-any.whl
   name: uproot
   version: 5.7.4
