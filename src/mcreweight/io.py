@@ -240,7 +240,12 @@ def save_data(
             branch_types = {}
             for k, v in branch_dict.items():
                 try:
-                    branch_types[k] = ak.to_numpy(v).dtype
+                    arr_np = ak.to_numpy(v)
+                    if arr_np.ndim > 1:
+                        # fixed-size array branch: preserve sub-array shape
+                        branch_types[k] = np.dtype((arr_np.dtype, arr_np.shape[1:]))
+                    else:
+                        branch_types[k] = arr_np.dtype
                 except (ValueError, TypeError):
                     # jagged (variable-length) branch: use "var * dtype" notation
                     inner_dtype = ak.to_numpy(ak.flatten(v, axis=None)).dtype

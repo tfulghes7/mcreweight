@@ -464,7 +464,7 @@ def _plot_post_training_diagnostics(
 
     plt.plot_classifier_output(
         scores=scores,
-        weights=weights,
+        weights={**weights, "Data": sample["w_data_test"]},
         methods=args.methods,
         output_file=f"{plotdir}/classifier_output.png",
     )
@@ -519,6 +519,7 @@ def run_reweighting_pipeline(args, plotdir, weightsdir):
     plt.configure_style(
         style=getattr(args, "style", "plain"),
         sample_label=getattr(args, "sample_label", None),
+        extra_label=getattr(args, "extra_label", None),
     )
     if args.verbosity >= 1:
         print("[INFO] Starting reweighting pipeline...")
@@ -663,6 +664,7 @@ def apply_weights_pipeline(args, plotdir, weightsdir, out_weightsdir):
     plt.configure_style(
         style=getattr(args, "style", "plain"),
         sample_label=getattr(args, "sample_label", None),
+        extra_label=getattr(args, "extra_label", None),
     )
     if args.verbosity >= 1:
         print("[INFO] Loading data for applying weights...")

@@ -1,6 +1,7 @@
 import itertools
 import logging
 import math
+import os
 
 import matplotlib.pyplot as plt
 
@@ -27,9 +28,10 @@ logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
 _STYLE = "plain"
 _SAMPLE_LABEL = None
+_EXTRA_LABEL = None
 
 
-def configure_style(style="plain", sample_label=None):
+def configure_style(style="plain", sample_label=None, extra_label=None):
     """Configure the plot style and optional sample label for the session.
 
     Args:
@@ -37,10 +39,14 @@ def configure_style(style="plain", sample_label=None):
             ``"LHCb"`` (mplhep LHCb2 style with experiment label on each plot).
         sample_label (str | None): Text placed in the top-right of each frame
             when style is ``"LHCb"``. Ignored for ``"plain"``.
+        extra_label (str | None): Text placed in italic immediately after "LHCb"
+            on the top-left (e.g. ``"Simulation"`` or ``"Preliminary"``).
+            Ignored for ``"plain"``.
     """
-    global _STYLE, _SAMPLE_LABEL
+    global _STYLE, _SAMPLE_LABEL, _EXTRA_LABEL
     _STYLE = style
     _SAMPLE_LABEL = sample_label
+    _EXTRA_LABEL = extra_label
     _apply_style()
 
 
@@ -107,7 +113,7 @@ def _add_labels(
 
     label_size = plt.rcParams.get("axes.labelsize", 26)
 
-    ax.text(
+    lhcb_text = ax.text(
         x_min_lhcb,
         y_min_lhcb,
         "LHCb",
@@ -117,6 +123,19 @@ def _add_labels(
         fontsize=label_size,
         clip_on=False,
     )
+    if _EXTRA_LABEL:
+        ax.annotate(
+            f" {_EXTRA_LABEL}",
+            xycoords=lhcb_text,
+            xy=(1, 0),
+            xytext=(0, 0),
+            textcoords="offset points",
+            ha="left",
+            va="bottom",
+            fontsize=label_size,
+            fontstyle="italic",
+            clip_on=False,
+        )
     if _SAMPLE_LABEL:
         ax.text(
             x_min_sample,
@@ -426,7 +445,7 @@ def plot_distributions(
             bin_centers,
             mc_density,
             where="mid",
-            label="MC",
+            label=args.mc_label,
             linewidth=1.5,
             color=MC_COLOR,
         )
@@ -447,7 +466,7 @@ def plot_distributions(
             color=DATA_COLOR,
             markerfacecolor=DATA_COLOR,
             markeredgecolor=DATA_COLOR,
-            label="Data",
+            label=args.data_label,
             markersize=5,
             elinewidth=1,
             capsize=3,
@@ -706,7 +725,7 @@ def plot_roc_curve(sample, weights, methods, columns, output_file):
     ax.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Random")
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
-    ax.set_title("ROC Curve: Classifier distinguishing reweighted MC from Data")
+    ax.set_title("ROC Curve")
     ax.legend(loc="lower right")
     _add_labels(ax)
     plt.savefig(output_file)
@@ -720,66 +739,86 @@ def plot_classifier_output(
     scores, weights, methods, output_file, min_score=0.0, max_score=1.0
 ):
     """
-    Plot classifier output distributions and show weighted KS vs Data.
+    Produce two sets of classifier output plots.
 
-    Parameters are the classifier ``scores`` returned by ``plot_roc_curve``,
-    the per-method ``weights`` mapping, the list of ``methods`` to display, the
-    destination ``output_file``, and the histogram range defined by
-    ``min_score`` and ``max_score``.
+    1. ``output_file``: all methods' MC score distributions overlaid on a
+       single axes — no Target line — for a quick visual comparison.
+    2. ``output_file`` with ``_{method}`` inserted before the extension: one
+       file per method showing MC (solid) and Target (dashed) from the *same*
+       per-method classifier, so the KS comparison is self-consistent.
     """
+    active = [m for m in methods if scores.get(m, {}).get("MC") is not None]
+    if not active:
+        return
 
+    hist_kw = dict(bins=50, density=True, range=(min_score, max_score))
+    stem, ext = os.path.splitext(output_file)
+
+    # ── 1. Combined overlay (MC only, all methods) ───────────────────────────
     _apply_style()
-
-    plt.figure(figsize=(16, 12))
-
-    example_method = next(iter(scores))
-    score_data = scores[example_method]["Data"]
-    weights_data = weights.get("Data", np.ones_like(score_data))
-
-    for method in methods:
-        if "MC" not in scores[method] or scores[method]["MC"] is None:
-            continue
-
+    fig, ax = plt.subplots(figsize=(16, 12))
+    for method in active:
         score_mc = scores[method]["MC"]
         w_mc = weights.get(method, np.ones_like(score_mc))
-        method_color = METHOD_COLORS.get(method, MC_COLOR)
-
-        # KS statistic vs Data
-        ks_val = weighted_ks_statistic(score_mc, score_data, w1=w_mc, w2=weights_data)
-        legend_label = f"{method} (KS = {ks_val:.3f})"
-
-        plt.hist(
+        ax.hist(
             score_mc,
-            bins=50,
-            density=True,
             weights=w_mc,
             alpha=0.6,
-            range=(min_score, max_score),
-            label=legend_label,
-            color=method_color,
+            color=METHOD_COLORS.get(method, MC_COLOR),
+            label=method,
+            **hist_kw,
         )
-
-    # Also show Data distribution
-    plt.hist(
-        score_data,
-        bins=50,
-        density=True,
-        weights=weights_data,
-        alpha=0.6,
-        range=(min_score, max_score),
-        label="Data",
-        color=DATA_COLOR,
-    )
-
-    plt.xlabel("Classifier output")
-    plt.ylabel("Density")
-    plt.title("Classifier score distributions")
-    plt.legend()
-    _add_labels(plt.gca())
+    ax.set_xlabel("Classifier output")
+    ax.set_ylabel("Density")
+    ax.set_title("Classifier score distributions")
+    ax.legend()
+    _add_labels(ax)
     plt.savefig(output_file, bbox_inches="tight")
     plt.close()
-
     print(f"[INFO] Classifier output plot saved to: {output_file}")
+
+    # ── 2. Per-method: MC vs Target from the same classifier ─────────────────
+    for method in active:
+        _apply_style()
+        fig, ax = plt.subplots(figsize=(12, 9))
+
+        score_mc = scores[method]["MC"]
+        score_target = scores[method]["Data"]
+        w_mc = weights.get(method, np.ones_like(score_mc))
+        w_target = weights.get("Data", np.ones_like(score_target))
+        method_color = METHOD_COLORS.get(method, MC_COLOR)
+
+        ks_val = weighted_ks_statistic(score_mc, score_target, w1=w_mc, w2=w_target)
+
+        ax.hist(
+            score_mc,
+            weights=w_mc,
+            alpha=0.6,
+            color=method_color,
+            label=f"{method} (KS={ks_val:.3f})",
+            **hist_kw,
+        )
+        ax.hist(
+            score_target,
+            weights=w_target,
+            histtype="step",
+            linewidth=2,
+            linestyle="--",
+            color=DATA_COLOR,
+            label="Target",
+            **hist_kw,
+        )
+
+        ax.set_xlabel("Classifier output")
+        ax.set_ylabel("Density")
+        ax.set_title(f"{method} score")
+        ax.legend()
+        _add_labels(ax)
+
+        per_method_file = f"{stem}_{method}{ext}"
+        plt.savefig(per_method_file, bbox_inches="tight")
+        plt.close()
+        print(f"[INFO] Classifier output plot saved to: {per_method_file}")
 
 
 def plot_weight_distributions(weights, output_file, bins=50, xlim=(0, 10)):

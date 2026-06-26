@@ -108,6 +108,9 @@ def merge_args_with_config(args, cfg):
         reweight_metric_every=cli_or_cfg(
             args.reweight_metric_every, cfg, ["reweighting", "reweight_metric_every"], 1
         ),
+        max_log_weight=cli_or_cfg(
+            args.max_log_weight, cfg, ["reweighting", "max_log_weight"], 3.0
+        ),
         clip_weights=(
             args.clip_weights
             or get_from_cfg(cfg, ["reweighting", "clip_weights"], True)
@@ -127,6 +130,9 @@ def merge_args_with_config(args, cfg):
         style=cli_or_cfg(args.style, cfg, ["plotting", "style"], "plain"),
         sample_label=cli_or_cfg(
             args.sample_label, cfg, ["plotting", "sample_label"], None
+        ),
+        extra_label=cli_or_cfg(
+            args.extra_label, cfg, ["plotting", "extra_label"], None
         ),
     )
 
@@ -266,6 +272,12 @@ def build_parser():
         help="Evaluate the iterative ONNX validation metric every N stages (overrides YAML config)",
     )
     parser.add_argument(
+        "--max-log-weight",
+        dest="max_log_weight",
+        type=float,
+        help="Maximum absolute log-weight allowed during iterative reweighting for XGB and NN (overrides YAML config)",
+    )
+    parser.add_argument(
         "--clip-weights",
         action="store_true",
         help="When enabled, clip extreme predicted weights for GB, ONNXGB, Bins, GBFolding and ONNXGBFolding (overrides YAML config)",
@@ -312,6 +324,12 @@ def build_parser():
         dest="sample_label",
         default=None,
         help="Text written top-right on each plot frame when style is 'LHCb' (overrides YAML config)",
+    )
+    parser.add_argument(
+        "--extra-label",
+        dest="extra_label",
+        default=None,
+        help="Italic text placed immediately after 'LHCb' on the top-left, e.g. 'Simulation' or 'Preliminary' (overrides YAML config)",
     )
 
     return parser

@@ -300,7 +300,7 @@ def xgbreweight(args, sample, columns, weightsdir, study=None):
     # ---- Map Optuna params -> your iterative reweighter params ----
     # Iterative (stage-wise) knobs
     iter_kwargs = dict(
-        n_iterations=best.get("n_iterations", 25),  # <-- number of iterations/stages
+        n_iterations=best.get("n_iterations", 15),  # <-- number of iterations/stages
         mixing_learning_rate=best.get(
             "mixing_learning_rate", 0.05
         ),  # <-- iterative step size
@@ -309,6 +309,7 @@ def xgbreweight(args, sample, columns, weightsdir, study=None):
         reweight_validation_fraction=args.reweight_validation_fraction,
         reweight_early_stopping_rounds=args.reweight_early_stopping_rounds,
         reweight_metric_every=args.reweight_metric_every,
+        max_log_weight=getattr(args, "max_log_weight", 3.0),
     )
 
     # Base XGB (per-stage classifier) knobs
@@ -418,13 +419,14 @@ def nnreweight(args, sample, columns, weightsdir, study=None):
     best = study.best_params if study is not None else {}
 
     iter_kwargs = dict(
-        n_iterations=best.get("n_iterations", 5),
+        n_iterations=best.get("n_iterations", 10),
         mixing_learning_rate=best.get("mixing_learning_rate", 0.05),
         verbosity=args.verbosity,
         transform=args.transform,
         reweight_validation_fraction=args.reweight_validation_fraction,
         reweight_early_stopping_rounds=args.reweight_early_stopping_rounds,
         reweight_metric_every=args.reweight_metric_every,
+        max_log_weight=getattr(args, "max_log_weight", 3.0),
     )
 
     # NN base (per-stage MLP) knobs

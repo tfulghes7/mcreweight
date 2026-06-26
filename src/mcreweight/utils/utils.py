@@ -36,6 +36,11 @@ def check_coverage(
         data_weights (np.ndarray, optional): Event weights for data.
         quantile (float): Quantile used as the effective lower/upper boundary (default 0.01).
     """
+    if len(mc) == 0:
+        raise ValueError("check_coverage: MC sample is empty after filtering.")
+    if len(data) == 0:
+        raise ValueError("check_coverage: data sample is empty after filtering.")
+
     mc_w = mc_weights if mc_weights is not None else np.ones(len(mc))
     da_w = data_weights if data_weights is not None else np.ones(len(data))
 
@@ -204,10 +209,14 @@ def check_weights_for_nans(weights, label="weights"):
 
 def _weighted_quantile(values, weights, q):
     """Compute the weighted quantile of a 1-D array."""
+    if len(values) == 0:
+        return np.nan
     sorter = np.argsort(values)
     sorted_vals = values[sorter]
     sorted_w = weights[sorter]
     cumulative = np.cumsum(sorted_w)
+    if cumulative[-1] == 0:
+        return np.nan
     cumulative /= cumulative[-1]
     return float(np.interp(q, cumulative, sorted_vals))
 
