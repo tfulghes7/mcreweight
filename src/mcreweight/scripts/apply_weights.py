@@ -46,9 +46,7 @@ def merge_args_with_config(args, cfg):
         sweights_tree=cli_or_cfg(
             args.sweights_tree, cfg, ["input", "data", "sweights_tree"], None
         ),
-        data_label=cli_or_cfg(
-            args.data_label, cfg, ["input", "data", "label"], "Data"
-        ),
+        data_label=cli_or_cfg(args.data_label, cfg, ["input", "data", "label"], "Data"),
         # --------------------
         # Plotting
         # --------------------
@@ -178,7 +176,8 @@ def build_parser():
         help="Name of a separate data tree to read the sweights branch from (overrides config)",
     )
     parser.add_argument(
-        "--data-label", help="Label for the data sample used in plots (overrides config)"
+        "--data-label",
+        help="Label for the data sample used in plots (overrides config)",
     )
 
     # Variables
