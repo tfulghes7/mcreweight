@@ -47,8 +47,14 @@ All methods follow the same high-level workflow:
 1. split MC and data into training and testing subsets;
 2. fit the selected reweighter on the training subset;
 3. predict new MC weights;
-4. clip very large predicted weights to the 99th percentile for stability;
+4. optionally clip very large predicted weights to the 99th percentile (see below);
 5. save both the trained model and the produced weight arrays.
+
+Clipping behavior differs by method. For ``GB``, ``ONNXGB``, ``Bins``,
+``GBFolding``, and ``ONNXFolding``, clipping is applied only when
+``--clip-weights`` (YAML: ``reweighting.clip_weights``) is enabled.
+For ``XGB``, ``NN``, ``XGBFolding``, and ``NNFolding``, clipping is always
+applied as part of the iterative update.
 
 The training entry points live in ``src/mcreweight/train.py`` and the ONNX-based
 implementations live in ``src/mcreweight/models/onnxreweighter.py`` and

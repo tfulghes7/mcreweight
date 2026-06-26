@@ -74,12 +74,18 @@ YAML skeleton
      reweight_metric_every: 1               # evaluate validation metric every N stages
      clip_weights: true                     # clip predicted weights at the 99th percentile
      folding_aggregation: weighted_geometric # weighted_geometric | geometric | median
+     max_log_weight: 3.0                    # max |log-weight| per event during iterative training
      shap: false                            # compute SHAP feature-importance values
 
    output:
      weightsdir: null                       # root directory for models and weight arrays;
                                             # falls back to $MCREWEIGHTS_DATA_ROOT if unset
      plotdir: plots                         # root directory for plots
+
+   plotting:
+     style: plain                           # plain | LHCb
+     sample_label: null                     # text in the top-right of each plot frame (LHCb style only)
+     extra_label: null                      # italic text after "LHCb", e.g. Simulation or Preliminary
 
 Key descriptions
 ~~~~~~~~~~~~~~~~
@@ -170,6 +176,12 @@ Key descriptions
        percentile before saving.  Applies to ``GB``, ``ONNXGB``, ``Folding``,
        ``ONNXFolding``, and ``Bins``.  ``XGB``, ``XGBFolding``, ``NN``, and
        ``NNFolding`` always clip regardless of this flag.
+   * - ``reweighting.max_log_weight``
+     - Maximum absolute log-weight allowed per event during iterative training
+       for ``XGB``, ``XGBFolding``, ``NN``, and ``NNFolding``.  Corresponds to
+       a maximum weight ratio of ``exp(max_log_weight)`` (default ``3.0`` →
+       ≈ 20×).  Increase this value if the true weight distribution has a heavy
+       tail that is being truncated.
    * - ``reweighting.folding_aggregation``
      - How fold-level predictions are combined for ``ONNXFolding``,
        ``XGBFolding``, and ``NNFolding``.  Choices: ``weighted_geometric``
@@ -184,6 +196,16 @@ Key descriptions
    * - ``output.plotdir``
      - Root directory for diagnostic plots.  A ``<sample>/`` subdirectory is
        created automatically.  Default: ``plots``.
+   * - ``plotting.style``
+     - Plot style.  ``plain`` (default) uses a clean serif style; ``LHCb``
+       applies the mplhep LHCb2 style and adds the experiment label to each
+       frame.
+   * - ``plotting.sample_label``
+     - Text placed in the top-right of each plot frame when ``style`` is
+       ``LHCb`` (e.g. a decay-channel label in LaTeX).  Ignored for ``plain``.
+   * - ``plotting.extra_label``
+     - Italic text rendered immediately after ``LHCb`` on the top-left, e.g.
+       ``Simulation`` or ``Preliminary``.  Ignored for ``plain``.
 
 CLI reference
 ~~~~~~~~~~~~~
@@ -233,6 +255,7 @@ line.
      --reweight-early-stopping-rounds INT     Early-stopping patience
      --reweight-metric-every INT              Validate every N stages
      --clip-weights / --clip-weight           Enable weight clipping (flags; default on)
+     --max-log-weight FLOAT                   Max |log-weight| per event for XGB/NN (default 3.0)
      --folding-aggregation {weighted_geometric,geometric,median}
                                               Fold-prediction aggregation strategy
      --shap                                   Compute SHAP feature importances
@@ -241,6 +264,11 @@ line.
      --weightsdir DIR     Root directory for model artifacts
      --plotdir DIR        Root directory for plots
      --path-xlabels PATH  YAML file of axis labels
+
+   Plotting
+     --style {plain,LHCb}   Plot style
+     --sample-label TEXT    Top-right frame label (LHCb style only)
+     --extra-label TEXT     Italic text after "LHCb", e.g. Simulation or Preliminary
 
 ----
 
@@ -268,11 +296,13 @@ YAML skeleton
        tree: DecayTree
        mcweights_name: null
        mcweights_tree: null
+       label: MC                            # label used in plots
      data:                                  # optional; enables comparison plots
        path: ["/path/to/data.root"]
        tree: DecayTree
        sweights_name: sweight_sig
        sweights_tree: null
+       label: Data                          # label used in plots
      path_xlabels: null
 
    variables:
@@ -318,6 +348,8 @@ Key descriptions
      - Prior MC weight branch or expression.  ``null`` → uniform weights of 1.
    * - ``input.mc.mcweights_tree``
      - Separate TTree for ``mcweights_name``.  ``null`` → same as ``input.mc.tree``.
+   * - ``input.mc.label``
+     - Display label used in comparison plots.  Default: ``MC``.
    * - ``input.data.path``
      - Optional data files.  When provided, comparison distributions are plotted.
    * - ``input.data.tree``
@@ -327,6 +359,8 @@ Key descriptions
        ``none`` to disable sWeights and use uniform data weights instead.
    * - ``input.data.sweights_tree``
      - Separate TTree for ``sweights_name``.  ``null`` → same as ``input.data.tree``.
+   * - ``input.data.label``
+     - Display label used in comparison plots.  Default: ``Data``.
    * - ``input.path_xlabels``
      - Path to an axis-label YAML file.  ``null`` → package defaults.
    * - ``variables.application_vars``
@@ -383,6 +417,7 @@ CLI reference
      --tree-mc TREE              MC TTree name
      --mcweights-name BRANCH     MC weights branch or expression
      --mcweights-tree TREE       Separate tree for MC weights
+     --mc-label LABEL            MC label for plots
 
    Data input (optional; enables comparison plots)
      --path-data PATH [PATH …]   Path(s) to data ROOT file(s)
@@ -390,6 +425,7 @@ CLI reference
      --sweights-name BRANCH      Data sWeights branch or expression; pass
                                  ``none`` to use uniform data weights
      --sweights-tree TREE        Separate tree for sWeights
+     --data-label LABEL          Data label for plots
 
    Variables
      --vars VAR [VAR …]              Application variable names (alias: --vars)
