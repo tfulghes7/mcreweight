@@ -464,7 +464,11 @@ def _plot_post_training_diagnostics(
 
     plt.plot_classifier_output(
         scores=scores,
-        weights={**weights, "Data": sample["w_data_test"]},
+        weights={
+            **weights,
+            "Data": sample["w_data_test"],
+            "DataFull": sample["w_data"],
+        },
         methods=args.methods,
         output_file=f"{plotdir}/classifier_output.png",
     )

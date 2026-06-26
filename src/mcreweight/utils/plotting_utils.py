@@ -785,7 +785,14 @@ def plot_classifier_output(
         score_mc = scores[method]["MC"]
         score_target = scores[method]["Data"]
         w_mc = weights.get(method, np.ones_like(score_mc))
-        w_target = weights.get("Data", np.ones_like(score_target))
+        w_data_test = weights.get("Data")
+        w_data_full = weights.get("DataFull")
+        if w_data_full is not None and len(w_data_full) == len(score_target):
+            w_target = w_data_full
+        elif w_data_test is not None and len(w_data_test) == len(score_target):
+            w_target = w_data_test
+        else:
+            w_target = np.ones_like(score_target, dtype=float)
         method_color = METHOD_COLORS.get(method, MC_COLOR)
 
         ks_val = weighted_ks_statistic(score_mc, score_target, w1=w_mc, w2=w_target)
