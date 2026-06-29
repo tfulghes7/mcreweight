@@ -613,21 +613,17 @@ def plot_training_throughput(throughput, output_file):
     y = np.arange(len(methods))
     fig_height = max(5, 0.9 * len(methods) + 2)
 
+    colors = [METHOD_COLORS.get(m, MC_COLOR) for m in methods]
+
     fig, ax = plt.subplots(figsize=(12, fig_height), constrained_layout=True)
-    ax.barh(
-        y,
-        dataset_rates,
-        height=0.6,
-        label="Dataset events/s",
-        alpha=0.85,
-    )
+    ax.barh(y, dataset_rates, height=0.6, color=colors, alpha=0.85)
     ax.set_yticks(y)
     ax.set_yticklabels(methods)
     ax.invert_yaxis()
     ax.set_xlabel("Training Throughput [events/s]")
     ax.set_title("Training Throughput by Method")
-    ax.legend()
     ax.grid(True, axis="x", alpha=0.3)
+    _add_labels(ax)
 
     xmax = max(dataset_rates, default=0.0)
     if xmax > 0:
@@ -664,21 +660,17 @@ def plot_training_memory(memory_profile, output_file):
     y = np.arange(len(methods))
     fig_height = max(5, 0.9 * len(methods) + 2)
 
+    colors = [METHOD_COLORS.get(m, MC_COLOR) for m in methods]
+
     fig, ax = plt.subplots(figsize=(12, fig_height), constrained_layout=True)
-    ax.barh(
-        y,
-        peak_mb,
-        height=0.6,
-        label="Peak RSS [MB]",
-        alpha=0.85,
-    )
+    ax.barh(y, peak_mb, height=0.6, color=colors, alpha=0.85)
     ax.set_yticks(y)
     ax.set_yticklabels(methods)
     ax.invert_yaxis()
     ax.set_xlabel("Memory [MB]")
     ax.set_title("Training Memory by Method")
-    ax.legend()
     ax.grid(True, axis="x", alpha=0.3)
+    _add_labels(ax)
 
     xmax = max(peak_mb, default=0.0)
     if xmax > 0:
