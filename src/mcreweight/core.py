@@ -724,7 +724,12 @@ def apply_weights_pipeline(args, plotdir, weightsdir, out_weightsdir):
 
     check_weights_for_nans(new_mc_weights, label=f"predicted weights ({args.method})")
 
-    w_normalized = new_mc_weights * (len(new_mc_weights) / np.sum(new_mc_weights))
+    if getattr(args, "normalize_weights", True):
+        w_normalized = new_mc_weights * (len(new_mc_weights) / np.sum(new_mc_weights))
+    else:
+        w_normalized = new_mc_weights
+        if args.verbosity >= 1:
+            print("[INFO] Skipping weight normalization (normalize_weights=False).")
     print("[INFO] Weights predicted successfully.")
     joblib.dump(
         w_normalized,

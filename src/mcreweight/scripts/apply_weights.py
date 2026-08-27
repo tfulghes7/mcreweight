@@ -97,6 +97,18 @@ def merge_args_with_config(args, cfg):
             args.weightsdir, cfg, ["reweighting", "weightsdir"], None
         ),
         plotdir=cli_or_cfg(args.plotdir, cfg, ["reweighting", "plotdir"], "plots"),
+        normalize_weights=cli_or_cfg(
+            args.normalize_weights,
+            cfg,
+            ["reweighting", "normalize_weights"],
+            True,
+        ),
+        normalization_factor=cli_or_cfg(
+            args.normalization_factor,
+            cfg,
+            ["reweighting", "normalization_factor"],
+            None,
+        ),
         verbosity=args.verbosity,
         style=cli_or_cfg(args.style, cfg, ["plotting", "style"], "plain"),
         sample_label=cli_or_cfg(
@@ -227,6 +239,25 @@ def build_parser():
     parser.add_argument(
         "--plotdir",
         help="Root directory for plots; an '<application-sample>/' subdirectory is created automatically (overrides config)",
+    )
+    parser.add_argument(
+        "--no-normalize-weights",
+        dest="normalize_weights",
+        action="store_false",
+        default=None,
+        help="Do not rescale the predicted weights to unit mean before plotting/saving"
+        " (overrides config; normalization is on by default)",
+    )
+    parser.add_argument(
+        "--normalization-factor",
+        type=float,
+        default=None,
+        help="Rescale predicted weights by this explicit factor instead of the"
+        " automatic per-sample unit-mean normalization (overrides config and"
+        " --normalize-weights/--no-normalize-weights). Useful to apply a common"
+        " normalization across two related samples (e.g. gen- and reco-level):"
+        " run once on the reference sample to see the printed automatic factor,"
+        " then pass it here for the other sample.",
     )
 
     # Output

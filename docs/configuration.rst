@@ -324,6 +324,8 @@ YAML skeleton
      application_sample: bd_jpsikst_ee      # subdirectory where output weights are written
      weightsdir: null                       # falls back to $MCREWEIGHTS_DATA_ROOT
      plotdir: plots
+     normalize_weights: true                # rescale predicted weights to unit mean
+     normalization_factor: null             # explicit factor overriding automatic normalization
 
    output:
      output_path: "/path/to/output.root"   # required
@@ -389,6 +391,21 @@ Key descriptions
        ``$MCREWEIGHTS_DATA_ROOT`` when unset.
    * - ``reweighting.plotdir``
      - Root directory for application plots.  Default: ``plots``.
+   * - ``reweighting.normalize_weights``
+     - When ``true`` (default), predicted weights are rescaled to unit mean
+       before plotting and saving.  Set to ``false`` to keep the raw
+       predicted weights.  Ignored when ``reweighting.normalization_factor``
+       is set.
+   * - ``reweighting.normalization_factor``
+     - Explicit factor to multiply the predicted weights by, overriding the
+       automatic per-sample unit-mean normalization (and
+       ``reweighting.normalize_weights``).  ``null`` (default) uses the
+       automatic behaviour.  Useful to impose a common normalization across
+       two related samples applied in separate runs (e.g. generator- and
+       reconstruction-level MC): run once on the reference sample, note the
+       automatic factor printed at ``verbosity >= 1``, and pass it here for
+       the other sample so both are scaled consistently rather than each
+       independently to its own event count.
    * - ``output.output_path``
      - Path of the ROOT file to write.  The file is created from scratch; all
        branches from the input MC tree plus the new weights branch are written.
@@ -438,6 +455,8 @@ CLI reference
      --application-sample NAME       Subdirectory for output weights and plots
      --weightsdir DIR                Root directory for model artifacts
      --plotdir DIR                   Root directory for plots
+     --no-normalize-weights          Disable rescaling weights to unit mean (default on)
+     --normalization-factor FACTOR   Explicit rescaling factor, overriding automatic normalization
 
    Output
      --output-path PATH      Path for the output ROOT file
